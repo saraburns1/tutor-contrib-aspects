@@ -135,7 +135,7 @@ class Asset:
                     if key in self.get_raw_vars():
                         raw_expression = "{% raw %}" + content[key] + "{% endraw %}"
                         content[key] = raw_expression
-                    else:
+                    elif key != 'sql':
                         content[key] = existing[key]
 
             if isinstance(content[key], dict):
@@ -167,7 +167,7 @@ class ChartAsset(Asset):
         "params.datasource",
         "params.slice_id",
     ]
-    raw_vars = ["sqlExpression", "query_context"]
+    raw_vars = ["sqlExpression", "query_context", "translate_column"]
 
     def process(self, content: dict, existing: dict):
         if not content.get("query_context"):
@@ -175,6 +175,8 @@ class ChartAsset(Asset):
         query_context = content["query_context"]
         if query_context is not None and isinstance(query_context, str):
             content["query_context"] = json.loads(query_context)
+        # run templated vars again to update query_context
+        self.omit_templated_vars(content["query_context"], existing.get("query_context"))
 
 
 class DashboardAsset(Asset):
@@ -192,8 +194,9 @@ class DatasetAsset(Asset):
     """
 
     path = "datasets"
-    templated_vars = ["schema", "table_name", "sql"]
+    templated_vars = ["schema", "table_name"]
     omitted_vars = ["extra.certification"]
+    sql_update = ()
 
     def process(self, content: dict, existing: dict):
         """
@@ -206,6 +209,10 @@ class DatasetAsset(Asset):
         for metric in content.get("metrics", []):
             if not metric.get("verbose_name"):
                 metric["verbose_name"] = metric["metric_name"].replace("_", " ").title()
+
+        if content['sql'] and "{% include" in existing['sql']:
+            self.sql_update = (existing['sql'].split("'")[1],content['sql'])
+            content['sql'] = existing['sql']
 
 
 class DatabaseAsset(Asset):
@@ -299,9 +306,10 @@ def validate_asset_file(asset_path, content, echo):  # pylint: disable=too-many-
             cls.remove_content(content)
             cls.omit_templated_vars(content, existing)
             cls.process(content, existing)
+            sql_update = cls.sql_update if hasattr(cls, 'sql_update') else None
             # We found the correct class, we can stop looking.
             break
-    return out_path, needs_review
+    return out_path, needs_review, sql_update
 
 
 def import_superset_assets(file, echo):
@@ -310,6 +318,7 @@ def import_superset_assets(file, echo):
     """
     written_assets = []
     review_files = set()
+    sql_files_updated = []
     err = 0
 
     with ZipFile(file.name) as zip_file:
@@ -318,7 +327,7 @@ def import_superset_assets(file, echo):
                 continue
             with zip_file.open(asset_path) as asset_file:
                 content = yaml.safe_load(asset_file)
-                out_path, needs_review = validate_asset_file(asset_path, content, echo)
+                out_path, needs_review, sql_update = validate_asset_file(asset_path, content, echo)
 
                 # This can happen if it's an unknown asset type
                 if not out_path:
@@ -332,6 +341,17 @@ def import_superset_assets(file, echo):
 
                 with open(out_path, "w", encoding="utf-8") as out_f:
                     yaml.dump(content, out_f, encoding="utf-8")
+
+                if sql_update:
+                    path = os.path.join(
+                        PLUGIN_PATH,
+                        "templates",
+                        sql_update[0]
+                    )                    
+                    with open(path, "w", encoding="utf-8") as out_f:
+                        yaml.dump(sql_update[1], out_f, encoding="utf-8")
+                        sql_files_updated.append(path)
+
 
     if review_files:
         echo()
@@ -350,6 +370,7 @@ def import_superset_assets(file, echo):
 
     echo()
     echo(f"Serialized {len(written_assets)} assets")
+    echo(f'Updated {len(sql_files_updated)} SQL files')
 
     return err
 
