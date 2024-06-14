@@ -135,7 +135,7 @@ class Asset:
                     if key in self.get_raw_vars():
                         raw_expression = "{% raw %}" + content[key] + "{% endraw %}"
                         content[key] = raw_expression
-                    elif key != "sql":
+                    else:
                         content[key] = existing[key]
 
             if isinstance(content[key], dict):
@@ -196,9 +196,8 @@ class DatasetAsset(Asset):
     """
 
     path = "datasets"
-    templated_vars = ["schema", "table_name"]
+    templated_vars = ["schema", "table_name", "sql"]
     omitted_vars = ["extra.certification"]
-    sql_update = None
 
     def process(self, content: dict, existing: dict):
         """
@@ -211,10 +210,6 @@ class DatasetAsset(Asset):
         for metric in content.get("metrics", []):
             if not metric.get("verbose_name"):
                 metric["verbose_name"] = metric["metric_name"].replace("_", " ").title()
-
-        if content["sql"] and "{% include" in existing["sql"]:
-            self.sql_update = (existing["sql"].split("'")[1], content["sql"])
-            content["sql"] = existing["sql"]
 
 
 class DatabaseAsset(Asset):
@@ -308,10 +303,9 @@ def validate_asset_file(asset_path, content, echo):  # pylint: disable=too-many-
             cls.remove_content(content)
             cls.omit_templated_vars(content, existing)
             cls.process(content, existing)
-            sql_update = cls.sql_update if hasattr(cls, "sql_update") else None
             # We found the correct class, we can stop looking.
             break
-    return out_path, needs_review, sql_update
+    return out_path, needs_review
 
 
 def import_superset_assets(file, echo):  # pylint: disable=too-many-locals
@@ -320,8 +314,8 @@ def import_superset_assets(file, echo):  # pylint: disable=too-many-locals
     """
     written_assets = []
     review_files = set()
-    sql_files_updated = []
     err = 0
+    dataset_warn = False
 
     with ZipFile(file.name) as zip_file:
         for asset_path in zip_file.namelist():
@@ -329,13 +323,16 @@ def import_superset_assets(file, echo):  # pylint: disable=too-many-locals
                 continue
             with zip_file.open(asset_path) as asset_file:
                 content = yaml.safe_load(asset_file)
-                out_path, needs_review, sql_update = validate_asset_file(
+                out_path, needs_review = validate_asset_file(
                     asset_path, content, echo
                 )
 
                 # This can happen if it's an unknown asset type
                 if not out_path:
                     continue
+
+                if "dataset" in out_path:
+                    dataset_warn = True
 
                 if needs_review:
                     review_files.add(content[FILE_NAME_ATTRIBUTE])
@@ -345,12 +342,6 @@ def import_superset_assets(file, echo):  # pylint: disable=too-many-locals
 
                 with open(out_path, "w", encoding="utf-8") as out_f:
                     yaml.dump(content, out_f, encoding="utf-8")
-
-                if sql_update is not None:
-                    path = os.path.join(PLUGIN_PATH, "templates", sql_update[0])
-                    with open(path, "w", encoding="utf-8") as out_f:
-                        yaml.dump(sql_update[1], out_f, encoding="utf-8")
-                        sql_files_updated.append(path)
 
     if review_files:
         echo()
@@ -369,7 +360,9 @@ def import_superset_assets(file, echo):  # pylint: disable=too-many-locals
 
     echo()
     echo(f"Serialized {len(written_assets)} assets")
-    echo(f"Updated {len(sql_files_updated)} SQL files")
+    if dataset_warn:
+        echo()
+        echo("WARNING: Datasets were changed, please check if SQL queries need to be updated")
 
     return err
 
