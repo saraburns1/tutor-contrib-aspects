@@ -16,23 +16,23 @@ num_batches: 3
 batch_size: 100
 
 # Overall start and end date for the entire run
-start_date: 2014-01-01
-end_date: 2023-11-27
+start_date: 2024-01-01
+end_date: 2025-01-01
 
 # All courses will be this long, and be fit into the start / end dates
 # This must be less than end_date - start_date days.
 course_length_days: 120
 
 # The size of the test
-num_organizations: 3
-num_actors: 10
+num_organizations: 10
+num_actors: 100
 
 # How many of each size course to create. The sum of these is the total number
 # of courses created for the test.
 num_course_sizes:
-  small: 1
-  medium: 1
-  large: 1
+  small: 5
+  medium: 3
+  large: 2
   huge: 1
 
 # Course size configurations, how many of each type of object are created for
@@ -41,7 +41,7 @@ num_course_sizes:
 # "num_course_sizes".
 course_size_makeup:
   small:
-    actors: 5
+    actors: 25
     problems: 20
     videos: 10
     chapters: 3
@@ -49,7 +49,7 @@ course_size_makeup:
     verticals: 20
     forum_posts: 20
   medium:
-    actors: 7
+    actors: 50
     problems: 40
     videos: 20
     chapters: 4
@@ -57,7 +57,7 @@ course_size_makeup:
     verticals: 30
     forum_posts: 40
   large:
-    actors: 10
+    actors: 75
     problems: 80
     videos: 30
     chapters: 5
@@ -65,7 +65,7 @@ course_size_makeup:
     verticals: 80
     forum_posts: 200
   huge:
-    actors: 10
+    actors: 100
     problems: 160
     videos: 40
     chapters: 10
