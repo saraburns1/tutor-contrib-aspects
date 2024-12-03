@@ -1,7 +1,5 @@
-with watches as ({% include 'openedx-assets/queries/fact_watched_video_segments.sql' %})
-
 select watches.*
-from watches
+from reporting.fact_watched_video_segments(org_filter=[],course_key_filter=[]) watches
 join
     (
         {% include 'openedx-assets/queries/at_risk_learner_filter.sql' %}

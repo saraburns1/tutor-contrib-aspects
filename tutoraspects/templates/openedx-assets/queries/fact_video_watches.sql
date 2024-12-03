@@ -1,8 +1,3 @@
-with
-    watched_segments as (
-        {% include 'openedx-assets/queries/fact_watched_video_segments.sql' %}
-    )
-
 select
     org,
     course_key,
@@ -20,7 +15,7 @@ select
     count(distinct segment_start) as watched_segment_count,
     (video_duration - 10) / 5 as video_segment_count,
     video_segment_count <= watched_segment_count as watched_entire_video
-from watched_segments
+from reporting.fact_watched_video_segments(org_filter=[],course_key_filter=[])
 where
     1 = 1
     {% raw %}
