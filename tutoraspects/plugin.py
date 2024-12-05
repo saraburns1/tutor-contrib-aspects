@@ -428,9 +428,9 @@ hooks.Filters.CONFIG_UNIQUE.add_items(
         ("ASPECTS_CLICKHOUSE_CMS_PASSWORD", "{{ 24|random_string }}"),
         ######################
         # ClickHouse Settings
-        ("CLICKHOUSE_ADMIN_PASSWORD", "lhwCqt~AxG8n3"),
-        ("CLICKHOUSE_ADMIN_USER", "default"),
-        ("CLICKHOUSE_SECURE_CONNECTION", "true"),
+        ("CLICKHOUSE_ADMIN_USER", "ch_admin"),
+        ("CLICKHOUSE_ADMIN_PASSWORD", "{{ 24|random_string }}"),
+        ("CLICKHOUSE_SECURE_CONNECTION", False),
         ######################
         # Ralph Settings
         ("RALPH_ADMIN_USERNAME", "ralph"),
