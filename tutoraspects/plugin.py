@@ -170,7 +170,7 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # ClickHouse Settings
         # Note! ClickHouse has several reserved ports, make sure you are not reusing
         # a taken port: https://clickhouse.com/docs/en/guides/sre/network-ports
-        ("CLICKHOUSE_HOST", "clickhouse"),
+        ("CLICKHOUSE_HOST", "kwzev57t01.us-east-2.aws.clickhouse.cloud"),
         # If you are using ClickHouse in a clustered environment, place the name of
         # the cluster here. All objects will be created "ON CLUSTER" with replicated
         # table types, otherwise a single server deployment will be assumed.
@@ -202,12 +202,12 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
             "{% endif %}",
         ),
         (
-            "CLICKHOUSE_INTERNAL_NATIVE_PORT",
-            "{% if CLICKHOUSE_SECURE_CONNECTION %}"
-            "{{CLICKHOUSE_INTERNAL_TLS_NATIVE_PORT}}"
-            "{% else %}"
-            "{{CLICKHOUSE_INTERNAL_INSECURE_NATIVE_PORT}}"
-            "{% endif %}",
+            "CLICKHOUSE_INTERNAL_NATIVE_PORT",8443
+            # "{% if CLICKHOUSE_SECURE_CONNECTION %}"
+            # "{{CLICKHOUSE_INTERNAL_TLS_NATIVE_PORT}}"
+            # "{% else %}"
+            # "{{CLICKHOUSE_INTERNAL_INSECURE_NATIVE_PORT}}"
+            # "{% endif %}",
         ),
         # Port for the HTTP interface exposed on the host container in Docker Compose.
         ("CLICKHOUSE_HOST_INSECURE_HTTP_PORT", "8123"),
@@ -428,9 +428,9 @@ hooks.Filters.CONFIG_UNIQUE.add_items(
         ("ASPECTS_CLICKHOUSE_CMS_PASSWORD", "{{ 24|random_string }}"),
         ######################
         # ClickHouse Settings
-        ("CLICKHOUSE_ADMIN_USER", "ch_admin"),
-        ("CLICKHOUSE_ADMIN_PASSWORD", "{{ 24|random_string }}"),
-        ("CLICKHOUSE_SECURE_CONNECTION", False),
+        ("CLICKHOUSE_ADMIN_PASSWORD", "lhwCqt~AxG8n3"),
+        ("CLICKHOUSE_ADMIN_USER", "default"),
+        ("CLICKHOUSE_SECURE_CONNECTION", "true"),
         ######################
         # Ralph Settings
         ("RALPH_ADMIN_USERNAME", "ralph"),

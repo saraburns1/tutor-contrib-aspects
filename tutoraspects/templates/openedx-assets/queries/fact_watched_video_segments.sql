@@ -7,4 +7,3 @@ from
             (select array_concat_agg(course_key) from course_keys), []
         ) {%- endraw %}
     )
-where 1 = 1 {% include 'openedx-assets/queries/common_filters.sql' %}
