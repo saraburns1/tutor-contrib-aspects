@@ -8,7 +8,7 @@ appdirs==1.4.4
     # via tutor
 asttokens==3.0.0
     # via transifex-python
-bcrypt==4.3.0
+bcrypt==5.0.0
     # via -r requirements/base.in
 black==25.9.0
     # via shandy-sqlfmt
@@ -47,7 +47,7 @@ jinja2==3.1.6
     #   tutor
 kubernetes==33.1.0
     # via tutor
-markupsafe==3.0.2
+markupsafe==3.0.3
     # via jinja2
 mypy==1.18.2
     # via tutor
@@ -89,7 +89,7 @@ python-dateutil==2.9.0.post0
     # via kubernetes
 pytokens==0.1.10
     # via black
-pyyaml==6.0.2
+pyyaml==6.0.3
     # via
     #   kubernetes
     #   tutor
@@ -106,7 +106,7 @@ rsa==4.9.1
     # via google-auth
 ruamel-yaml==0.18.15
     # via -r requirements/base.in
-ruamel-yaml-clib==0.2.12
+ruamel-yaml-clib==0.2.14
     # via ruamel-yaml
 shandy-sqlfmt[jinjafmt]==0.26.0
     # via -r requirements/base.in
@@ -124,7 +124,7 @@ tutor==20.0.1
     # via
     #   -r requirements/base.in
     #   tutor-mfe
-tutor-mfe==20.0.0
+tutor-mfe==20.1.0
     # via -r requirements/base.in
 typing-extensions==4.15.0
     # via
