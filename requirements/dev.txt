@@ -18,7 +18,7 @@ asttokens==3.0.0
     #   transifex-python
 backports-tarfile==1.2.0
     # via jaraco-context
-bcrypt==4.3.0
+bcrypt==5.0.0
     # via -r requirements/base.txt
 black==25.9.0
     # via
@@ -105,7 +105,7 @@ kubernetes==33.1.0
     #   tutor
 markdown-it-py==4.0.0
     # via rich
-markupsafe==3.0.2
+markupsafe==3.0.3
     # via
     #   -r requirements/base.txt
     #   jinja2
@@ -179,7 +179,7 @@ pygments==2.19.2
     #   rich
 pyinstaller==6.16.0
     # via -r requirements/dev.in
-pyinstaller-hooks-contrib==2025.8
+pyinstaller-hooks-contrib==2025.9
     # via pyinstaller
 pylint==3.3.8
     # via -r requirements/dev.in
@@ -195,7 +195,7 @@ pytokens==0.1.10
     # via
     #   -r requirements/base.txt
     #   black
-pyyaml==6.0.2
+pyyaml==6.0.3
     # via
     #   -r requirements/base.txt
     #   kubernetes
@@ -231,7 +231,7 @@ rsa==4.9.1
     #   google-auth
 ruamel-yaml==0.18.15
     # via -r requirements/base.txt
-ruamel-yaml-clib==0.2.12
+ruamel-yaml-clib==0.2.14
     # via
     #   -r requirements/base.txt
     #   ruamel-yaml
@@ -263,7 +263,7 @@ tutor==20.0.1
     #   tutor-mfe
 tutor-contrib-pod-autoscaling==20.0.0
     # via -r requirements/dev.in
-tutor-mfe==20.0.0
+tutor-mfe==20.1.0
     # via -r requirements/base.txt
 twine==6.2.0
     # via -r requirements/dev.in
