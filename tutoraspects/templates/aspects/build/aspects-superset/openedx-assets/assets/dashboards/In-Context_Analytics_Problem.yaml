@@ -21,7 +21,13 @@ description: null
 metadata:
   chart_configuration: {}
   color_scheme: aspects_default
-  color_scheme_domain: []
+  color_scheme_domain:
+  - '#29A399'
+  - '#7B144D'
+  - '#F4661F'
+  - '#3B3B3B'
+  - '#9F81CF'
+  - '#11406A'
   cross_filters_enabled: true
   expanded_slices: {}
   global_chart_configuration:
@@ -33,6 +39,7 @@ metadata:
       rootPath:
       - ROOT_ID
   label_colors: {}
+  map_label_colors: {}
   native_filter_configuration:
   - cascadeParentIds: []
     chartsInScope:
@@ -92,14 +99,14 @@ metadata:
       datasetUuid: e173019a-34ff-4b4a-a24e-a4a06c748abe
     type: NATIVE_FILTER
   refresh_frequency: 0
-  shared_label_colors: {}
+  shared_label_colors: []
   timed_refresh_immune_slices: []
 position:
   CHART-explore-1662-1:
     children: []
     id: CHART-explore-1662-1
     meta:
-      chartId: 125
+      chartId: 1708
       height: 53
       sliceName: Initial Responses
       uuid: f0c87e4b-86b6-4630-b09d-119bc1297c79
@@ -113,7 +120,7 @@ position:
     children: []
     id: CHART-explore-1663-1
     meta:
-      chartId: 83
+      chartId: 1643
       height: 50
       sliceName: Problem Results Table
       uuid: 32f16acb-32b6-4690-8107-e4a166ad401c
@@ -164,6 +171,5 @@ position:
     type: ROW
 published: true
 slug: in-context-problem
-theme_uuid: null
 uuid: 98ff33ff-18dd-48f9-8c58-629ae4f4194b
 version: 1.0.0

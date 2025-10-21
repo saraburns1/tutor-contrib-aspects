@@ -17,7 +17,6 @@ params:
     sqlExpression: |-
       `section_subsection_name` <> ''
     subject: null
-  annotation_layers: []
   color_scheme: supersetColors
   comparison_type: values
   extra_form_data: {}

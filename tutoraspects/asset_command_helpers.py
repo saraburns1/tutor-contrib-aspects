@@ -205,7 +205,7 @@ class DashboardAsset(Asset):
 
     path = "dashboards"
     required_vars = ["_roles"]
-    omitted_vars = ["tags"]
+    omitted_vars = ["tags", "theme_uuid"]
 
 
 class DatasetAsset(Asset):
@@ -243,6 +243,7 @@ class DatabaseAsset(Asset):
 
     path = "databases"
     templated_vars = ["sqlalchemy_uri"]
+    omitted_vars = ["impersonate_user"]
 
 
 ASSET_TYPE_MAP = {

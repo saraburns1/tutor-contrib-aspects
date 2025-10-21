@@ -51,7 +51,7 @@ params:
   viz_type: table
 query_context:
   datasource:
-    id: 6
+    id: 182
     type: table
   force: false
   form_data:
@@ -69,6 +69,7 @@ query_context:
       subject: content_level
     all_columns: []
     allow_render_html: true
+    annotation_layers: []
     color_pn: true
     comparison_color_scheme: Green
     comparison_type: values
@@ -81,9 +82,7 @@ query_context:
       column: at_leat_one_page_viewed
       operator: '>'
       targetValue: 0
-    dashboards:
-    - 29
-    datasource: 6__table
+    datasource: 182__table
     extra_form_data: {}
     force: false
     groupby:
@@ -101,7 +100,7 @@ query_context:
     result_type: full
     row_limit: 10000
     show_cell_bars: true
-    slice_id: 182
+    slice_id: 1250
     table_timestamp_format: smart_date
     temporal_columns_lookup: {}
     time_grain_sqla: P1M

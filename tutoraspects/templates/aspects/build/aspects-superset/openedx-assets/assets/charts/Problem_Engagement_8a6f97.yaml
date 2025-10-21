@@ -17,7 +17,6 @@ params:
     expressionType: SIMPLE
     operator: TEMPORAL_RANGE
     subject: emission_time
-  annotation_layers: []
   color_scheme: aspects_default
   comparison_type: values
   comparison_type_b: values

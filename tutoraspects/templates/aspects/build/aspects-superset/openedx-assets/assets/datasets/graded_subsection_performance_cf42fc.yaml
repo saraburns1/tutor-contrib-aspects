@@ -3,7 +3,7 @@ always_filter_main_dttm: false
 cache_timeout: null
 columns:
 - advanced_data_type: null
-  column_name: score_range
+  column_name: score_range_count
   description: null
   expression: null
   extra:
@@ -13,8 +13,8 @@ columns:
   is_active: true
   is_dttm: false
   python_date_format: null
-  type: String
-  verbose_name: Score Range
+  type: UInt8
+  verbose_name: Score Range Count
 - advanced_data_type: null
   column_name: total_avg
   description: null
@@ -28,19 +28,6 @@ columns:
   python_date_format: null
   type: Float64
   verbose_name: Total Avg
-- advanced_data_type: null
-  column_name: score_range_count
-  description: null
-  expression: null
-  extra:
-    warning_markdown: null
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: UInt8
-  verbose_name: Score Range Count
 - advanced_data_type: null
   column_name: block_id
   description: null
@@ -67,6 +54,19 @@ columns:
   python_date_format: null
   type: String
   verbose_name: Course Key
+- advanced_data_type: null
+  column_name: score_range
+  description: null
+  expression: null
+  extra:
+    warning_markdown: null
+  filterable: true
+  groupby: true
+  is_active: true
+  is_dttm: false
+  python_date_format: null
+  type: String
+  verbose_name: Score Range
 - advanced_data_type: null
   column_name: org
   description: null

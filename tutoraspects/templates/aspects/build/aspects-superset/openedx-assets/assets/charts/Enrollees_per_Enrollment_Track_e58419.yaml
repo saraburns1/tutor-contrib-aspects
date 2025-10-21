@@ -28,7 +28,6 @@ params:
     operatorId: IN
     sqlExpression: null
     subject: enrollment_status
-  annotation_layers: []
   color_scheme: supersetColors
   comparison_type: values
   extra_form_data: {}

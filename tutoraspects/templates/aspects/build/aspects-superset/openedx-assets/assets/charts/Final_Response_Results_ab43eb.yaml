@@ -6,7 +6,6 @@ dataset_uuid: e6134213-e7f4-4081-9861-356c93f376dc
 description: null
 params:
   adhoc_filters: []
-  annotation_layers: []
   color_scheme: aspects_default
   comparison_type: values
   extra_form_data: {}

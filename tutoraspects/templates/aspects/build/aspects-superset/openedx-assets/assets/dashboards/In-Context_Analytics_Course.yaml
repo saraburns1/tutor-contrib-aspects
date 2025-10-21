@@ -20,29 +20,35 @@ dashboard_title: 'In-Context Analytics: Course'
 description: null
 metadata:
   chart_configuration:
-    '127':
-      crossFilters:
-        chartsInScope:
-        - 31
-        - 79
-        scope: global
-      id: 127
-    '31':
+    '1595':
       crossFilters:
         chartsInScope:
         - 79
         - 127
         scope: global
-      id: 31
-    '79':
+      id: 1595
+    '1598':
       crossFilters:
         chartsInScope:
         - 31
         - 127
         scope: global
-      id: 79
+      id: 1598
+    '1600':
+      crossFilters:
+        chartsInScope:
+        - 31
+        - 79
+        scope: global
+      id: 1600
   color_scheme: aspects_default
-  color_scheme_domain: []
+  color_scheme_domain:
+  - '#29A399'
+  - '#7B144D'
+  - '#F4661F'
+  - '#3B3B3B'
+  - '#9F81CF'
+  - '#11406A'
   cross_filters_enabled: true
   expanded_slices: {}
   global_chart_configuration:
@@ -55,6 +61,7 @@ metadata:
       rootPath:
       - ROOT_ID
   label_colors: {}
+  map_label_colors: {}
   native_filter_configuration:
   - cascadeParentIds: []
     chartsInScope:
@@ -86,18 +93,14 @@ metadata:
       datasetUuid: 38488934-35ee-5404-9acc-7e67626ddfae
     type: NATIVE_FILTER
   refresh_frequency: 0
-  shared_label_colors:
-    Repeat Views: '#7B144D'
-    Respondents: '#29A399'
-    Total Views: '#29A399'
-    perc_correct_first: '#7B144D'
+  shared_label_colors: []
   timed_refresh_immune_slices: []
 position:
   CHART-GnyQPJ18hu:
     children: []
     id: CHART-GnyQPJ18hu
     meta:
-      chartId: 79
+      chartId: 1598
       height: 50
       sliceName: Subsection Engagement
       uuid: 765e8acf-c304-4ec5-ac5d-b13a7b08c87d
@@ -111,7 +114,7 @@ position:
     children: []
     id: CHART-JcUPmDmZgw
     meta:
-      chartId: 127
+      chartId: 1600
       height: 50
       sliceName: Video Engagement
       uuid: ace4c769-00f4-4708-887b-14fd9e5f384e
@@ -125,7 +128,7 @@ position:
     children: []
     id: CHART-ijzuRYly2K
     meta:
-      chartId: 31
+      chartId: 1595
       height: 50
       sliceName: Problem Engagement
       uuid: 8a6f9753-ef72-46f5-8788-9e02f55456ea
@@ -187,6 +190,5 @@ position:
     type: ROW
 published: true
 slug: in-context-course
-theme_uuid: null
 uuid: f2880cc1-63e9-48d7-ac3c-d2ff6f6698e2
 version: 1.0.0

@@ -17,7 +17,6 @@ params:
     operatorId: TEMPORAL_RANGE
     sqlExpression: null
     subject: emission_day
-  annotation_layers: []
   color_scheme: supersetColors
   comparison_type: values
   extra_form_data: {}

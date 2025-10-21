@@ -7,7 +7,6 @@ description: null
 params:
   adhoc_filters: []
   adhoc_filters_b: []
-  annotation_layers: []
   color_scheme: aspects_default
   comparison_type: values
   comparison_type_b: values

@@ -7,7 +7,6 @@ description: null
 params:
   adhoc_filters: []
   adhoc_filters_b: []
-  annotation_layers: []
   area: false
   areaB: false
   color_scheme: aspects_default
@@ -78,8 +77,6 @@ params:
     sqlExpression: null
   minorSplitLine: false
   minorTicks: false
-  only_total: true
-  only_totalB: true
   opacity: 0
   opacityB: 0.6
   order_desc: false
@@ -93,8 +90,6 @@ params:
   show_legend: false
   show_value: false
   show_valueB: false
-  sort_series_type: sum
-  sort_series_typeB: sum
   stack: false
   stackB: false
   time_shift_color: true
@@ -103,7 +98,6 @@ params:
   truncate_metric: false
   truncate_metric_b: true
   viz_type: mixed_timeseries
-  xAxisLabelInterval: auto
   x_axis: score_range
   x_axis_time_format: smart_date
   x_axis_title: Subsection Score
@@ -125,7 +119,7 @@ params:
   zoomable: false
 query_context:
   datasource:
-    id: 57
+    id: 834
     type: table
   force: false
   form_data:
@@ -135,9 +129,7 @@ query_context:
     areaB: false
     color_scheme: aspects_default
     comparison_type: values
-    dashboards:
-    - 189
-    datasource: 57__table
+    datasource: 834__table
     extra_form_data: {}
     force: false
     groupby: []
@@ -177,8 +169,6 @@ query_context:
       sqlExpression: null
     minorSplitLine: false
     minorTicks: false
-    only_total: true
-    only_totalB: true
     opacity: 0
     opacityB: 0.6
     order_desc: false
@@ -192,7 +182,7 @@ query_context:
     show_legend: false
     show_value: false
     show_valueB: false
-    slice_id: 23
+    slice_id: 1680
     stack: false
     stackB: false
     time_shift_color: true
@@ -200,7 +190,6 @@ query_context:
     truncateXAxis: false
     truncate_metric: false
     viz_type: mixed_timeseries
-    xAxisLabelInterval: auto
     x_axis: score_range
     x_axis_time_format: smart_date
     x_axis_title: Subsection Score
@@ -234,6 +223,7 @@ query_context:
       having: ''
       where: ''
     filters: []
+    group_others_when_limit_reached: false
     metrics:
     - aggregate: SUM
       column:
@@ -316,6 +306,7 @@ query_context:
       having: ''
       where: ''
     filters: []
+    group_others_when_limit_reached: false
     metrics:
     - aggregate: AVG
       column:

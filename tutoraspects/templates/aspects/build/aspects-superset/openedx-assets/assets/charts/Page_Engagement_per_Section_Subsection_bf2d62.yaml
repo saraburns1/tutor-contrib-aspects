@@ -11,7 +11,6 @@ params:
     expressionType: SIMPLE
     operator: TEMPORAL_RANGE
     subject: visited_on
-  annotation_layers: []
   color_scheme: supersetColors
   comparison_type: values
   extra_form_data: {}
@@ -53,7 +52,7 @@ params:
   zoomable: true
 query_context:
   datasource:
-    id: 424
+    id: 182
     type: table
   force: false
   form_data:
@@ -65,7 +64,8 @@ query_context:
       subject: visited_on
     annotation_layers: []
     color_scheme: supersetColors
-    datasource: 424__table
+    comparison_type: values
+    datasource: 182__table
     extra_form_data: {}
     force: false
     forecastInterval: 0.8
@@ -87,7 +87,7 @@ query_context:
     show_empty_columns: true
     show_legend: true
     show_value: false
-    slice_id: 1441
+    slice_id: 435
     sort_series_type: sum
     time_shift_color: true
     tooltipTimeFormat: smart_date

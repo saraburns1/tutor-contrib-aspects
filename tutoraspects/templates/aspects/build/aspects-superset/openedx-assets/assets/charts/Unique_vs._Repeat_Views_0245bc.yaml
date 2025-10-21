@@ -27,7 +27,6 @@ params:
     operatorId: NOT_EQUALS
     sqlExpression: null
     subject: segment_start
-  annotation_layers: []
   color_scheme: aspects_default
   comparison_type: values
   extra_form_data: {}
