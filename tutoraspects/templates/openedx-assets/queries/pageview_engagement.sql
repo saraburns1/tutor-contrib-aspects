@@ -5,7 +5,7 @@ select
     page.content_level as content_level,
     page.actor_id as actor_id,
     page.section_subsection_page_engagement as section_subsection_page_engagement,
-    page.section_name as section_name,
+    page.section_with_name as section_with_name,
     page.username as username,
     page.name as name,
     page.email as email

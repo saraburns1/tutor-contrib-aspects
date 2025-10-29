@@ -9,6 +9,6 @@ select
     enrollment.enrollment_status as enrollment_status
 from {{ DBT_PROFILE_TARGET_DATABASE }}.dim_most_recent_enrollment enrollment
 left join
-    {{ ASPECTS_EVENT_SINK_DATABASE }}.dim_course_names cn
+    {{ ASPECTS_EVENT_SINK_DATABASE }}.dim_course_names names
     on enrollment.course_key = names.course_key
 where 1 = 1 {% include 'openedx-assets/queries/common_filters.sql' %}

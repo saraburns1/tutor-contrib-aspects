@@ -4,7 +4,7 @@ select
     navigation.block_id as block_id,
     navigation.course_order as course_order,
     navigation.actor_id as actor_id,
-    navigation.item_count as item_count,
+    navigation.page_count as item_count,
     navigation.section_with_name as section_with_name,
     navigation.subsection_with_name as subsection_with_name,
     navigation.visited_on as visited_on

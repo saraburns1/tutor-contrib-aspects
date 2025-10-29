@@ -75,18 +75,6 @@ columns:
   type: Float64
   verbose_name: Selected Learner Percent Incorrect
 - advanced_data_type: null
-  column_name: problem_name_with_location
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: String
-  verbose_name: Problem Name With Location
-- advanced_data_type: null
   column_name: coursewide_percent_correct
   description: null
   expression: null
@@ -111,30 +99,6 @@ columns:
   type: LowCardinality(String)
   verbose_name: Course Key
 - advanced_data_type: null
-  column_name: interaction_type
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: LowCardinality(String)
-  verbose_name: Interaction Type
-- advanced_data_type: null
-  column_name: emission_time
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: true
-  python_date_format: null
-  type: Nullable(DateTime)
-  verbose_name: Emission Time
-- advanced_data_type: null
   column_name: course_order
   description: null
   expression: null
@@ -146,54 +110,6 @@ columns:
   python_date_format: null
   type: Int32
   verbose_name: Course Order
-- advanced_data_type: null
-  column_name: actor_id
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: String
-  verbose_name: Actor Id
-- advanced_data_type: null
-  column_name: course_name
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: String
-  verbose_name: Course Name
-- advanced_data_type: null
-  column_name: course_run
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: String
-  verbose_name: Course Run
-- advanced_data_type: null
-  column_name: problem_id
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: String
-  verbose_name: Problem Id
 - advanced_data_type: null
   column_name: problem_link
   description: null
@@ -207,18 +123,6 @@ columns:
   type: String
   verbose_name: Problem Link
 - advanced_data_type: null
-  column_name: problem_name
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: String
-  verbose_name: Problem Name
-- advanced_data_type: null
   column_name: org
   description: null
   expression: null
@@ -231,18 +135,6 @@ columns:
   type: LowCardinality(String)
   verbose_name: Org
 - advanced_data_type: null
-  column_name: attempts
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: Int16
-  verbose_name: Attempts
-- advanced_data_type: null
   column_name: graded
   description: null
   expression: null
@@ -254,18 +146,6 @@ columns:
   python_date_format: null
   type: Bool
   verbose_name: Graded
-- advanced_data_type: null
-  column_name: success
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: Bool
-  verbose_name: Success
 - advanced_data_type: null
   column_name: email
   description: null
@@ -290,18 +170,6 @@ columns:
   python_date_format: null
   type: String
   verbose_name: Name
-- advanced_data_type: null
-  column_name: responses
-  description: null
-  expression: null
-  extra: {}
-  filterable: true
-  groupby: true
-  is_active: true
-  is_dttm: false
-  python_date_format: null
-  type: String
-  verbose_name: Responses
 - advanced_data_type: null
   column_name: username
   description: null
@@ -395,7 +263,7 @@ metrics:
 normalize_columns: false
 offset: 0
 params: null
-schema: null
+schema: '{{ DBT_PROFILE_TARGET_DATABASE }}'
 sql: |
   {% filter indent(width=2) %}{% include 'openedx-assets/queries/at_risk_problem_coursewide_avg.sql' %}{% endfilter %}
 table_name: at_risk_problem_coursewide_avg

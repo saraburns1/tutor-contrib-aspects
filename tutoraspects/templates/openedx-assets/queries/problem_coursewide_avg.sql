@@ -3,7 +3,7 @@ select
     avg.course_key as course_key,
     avg.course_order as course_order,
     avg.problem_link as problem_link,
-    avg.actor_id as actor_id,
+    avg.graded as graded,
     avg.avg_correct_attempts_coursewide as avg_correct_attempts_coursewide,
     avg.avg_incorrect_attempts_coursewide as avg_incorrect_attempts_coursewide,
     avg.coursewide_percent_correct as coursewide_percent_correct,

@@ -1,7 +1,6 @@
 select
     problem.org as org,
     problem.course_key as course_key,
-    problem.course_run as course_run,
     problem.section_subsection_name as section_subsection_name,
     problem.content_level as content_level,
     problem.actor_id as actor_id,
