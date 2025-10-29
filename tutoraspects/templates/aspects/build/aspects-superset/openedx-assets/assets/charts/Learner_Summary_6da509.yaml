@@ -8,16 +8,24 @@ params:
   adhoc_filters:
   - clause: WHERE
     comparator: No filter
+    datasourceWarning: false
     expressionType: SIMPLE
+    filterOptionName: filter_w0blb56w1yt_sc0csbam6s
+    isExtra: false
+    isNew: false
     operator: TEMPORAL_RANGE
-    subject: emission_time
+    operatorId: TEMPORAL_RANGE
+    sqlExpression: null
+    subject: last_visited
   all_columns: []
-  annotation_layers: []
+  allow_render_html: true
   color_pn: true
   column_config:
     Course Grade %:
       d3NumberFormat: ',.1%'
       d3SmallNumberFormat: ',.1%'
+  comparison_color_scheme: Green
+  comparison_type: values
   conditional_formatting:
   - colorScheme: '#ACE1C4'
     column: course_grade
@@ -39,23 +47,18 @@ params:
   - email
   - course_name
   - course_run
-  - datasourceWarning: false
-    expressionType: SQL
-    label: Enrollment Date
-    sqlExpression: emission_time
+  - enrolled_at
   - last_visited
   - datasourceWarning: false
     expressionType: SQL
     label: Passed/Failed
     sqlExpression: |-
       {% raw %}{{translate_column('approving_state')}}{% endraw %}
-  - datasourceWarning: false
-    expressionType: SQL
+  - expressionType: SQL
     label: Enrollment Track
     sqlExpression: |-
       {% raw %}{{translate_column('enrollment_mode')}}{% endraw %}
-  - datasourceWarning: false
-    expressionType: SQL
+  - expressionType: SQL
     label: Enrollment Status
     sqlExpression: |-
       {% raw %}{{translate_column('enrollment_status')}}{% endraw %}
@@ -63,43 +66,51 @@ params:
     expressionType: SQL
     label: Grade Range
     sqlExpression: grade_bucket
-  - expressionType: SQL
+  - datasourceWarning: false
+    expressionType: SQL
     label: Course Grade %
     sqlExpression: ROUND(course_grade, 2)
   order_by_cols: []
   order_desc: true
   percent_metrics: []
   query_mode: aggregate
-  row_limit: 1000
   server_page_length: 100
   server_pagination: true
   show_cell_bars: true
   show_totals: true
   table_timestamp_format: smart_date
   temporal_columns_lookup:
-    emission_time: true
+    enrolled_at: true
     last_visited: true
   time_grain_sqla: P1D
   viz_type: table
 query_context:
   datasource:
-    id: 29
+    id: 241
     type: table
   force: false
   form_data:
     adhoc_filters:
     - clause: WHERE
       comparator: No filter
+      datasourceWarning: false
       expressionType: SIMPLE
+      filterOptionName: filter_w0blb56w1yt_sc0csbam6s
+      isExtra: false
+      isNew: false
       operator: TEMPORAL_RANGE
-      subject: emission_time
+      operatorId: TEMPORAL_RANGE
+      sqlExpression: null
+      subject: last_visited
     all_columns: []
-    annotation_layers: []
+    allow_render_html: true
     color_pn: true
     column_config:
       Course Grade %:
         d3NumberFormat: ',.1%'
         d3SmallNumberFormat: ',.1%'
+    comparison_color_scheme: Green
+    comparison_type: values
     conditional_formatting:
     - colorScheme: '#ACE1C4'
       column: course_grade
@@ -114,7 +125,9 @@ query_context:
       column: course_grade
       operator: <
       targetValue: 0.5
-    datasource: 29__table
+    dashboards:
+    - 1265
+    datasource: 241__table
     extra_form_data: {}
     force: false
     groupby:
@@ -123,23 +136,18 @@ query_context:
     - email
     - course_name
     - course_run
-    - datasourceWarning: false
-      expressionType: SQL
-      label: Enrollment Date
-      sqlExpression: emission_time
+    - enrolled_at
     - last_visited
     - datasourceWarning: false
       expressionType: SQL
       label: Passed/Failed
       sqlExpression: |-
         {% raw %}{{translate_column('approving_state')}}{% endraw %}
-    - datasourceWarning: false
-      expressionType: SQL
+    - expressionType: SQL
       label: Enrollment Track
       sqlExpression: |-
         {% raw %}{{translate_column('enrollment_mode')}}{% endraw %}
-    - datasourceWarning: false
-      expressionType: SQL
+    - expressionType: SQL
       label: Enrollment Status
       sqlExpression: |-
         {% raw %}{{translate_column('enrollment_status')}}{% endraw %}
@@ -147,7 +155,8 @@ query_context:
       expressionType: SQL
       label: Grade Range
       sqlExpression: grade_bucket
-    - expressionType: SQL
+    - datasourceWarning: false
+      expressionType: SQL
       label: Course Grade %
       sqlExpression: ROUND(course_grade, 2)
     order_by_cols: []
@@ -156,15 +165,14 @@ query_context:
     query_mode: aggregate
     result_format: json
     result_type: full
-    row_limit: 1000
     server_page_length: 100
     server_pagination: true
     show_cell_bars: true
     show_totals: true
-    slice_id: 67
+    slice_id: 1481
     table_timestamp_format: smart_date
     temporal_columns_lookup:
-      emission_time: true
+      enrolled_at: true
       last_visited: true
     time_grain_sqla: P1D
     viz_type: table
@@ -172,32 +180,27 @@ query_context:
   - annotation_layers: []
     applied_time_extras: {}
     columns:
+    - columnType: BASE_AXIS
+      expressionType: SQL
+      label: enrolled_at
+      sqlExpression: enrolled_at
+      timeGrain: P1D
     - username
     - name
     - email
     - course_name
     - course_run
-    - datasourceWarning: false
-      expressionType: SQL
-      label: Enrollment Date
-      sqlExpression: emission_time
-    - columnType: BASE_AXIS
-      expressionType: SQL
-      label: last_visited
-      sqlExpression: last_visited
-      timeGrain: P1D
+    - last_visited
     - datasourceWarning: false
       expressionType: SQL
       label: Passed/Failed
       sqlExpression: |-
         {% raw %}{{translate_column('approving_state')}}{% endraw %}
-    - datasourceWarning: false
-      expressionType: SQL
+    - expressionType: SQL
       label: Enrollment Track
       sqlExpression: |-
         {% raw %}{{translate_column('enrollment_mode')}}{% endraw %}
-    - datasourceWarning: false
-      expressionType: SQL
+    - expressionType: SQL
       label: Enrollment Status
       sqlExpression: |-
         {% raw %}{{translate_column('enrollment_status')}}{% endraw %}
@@ -205,7 +208,8 @@ query_context:
       expressionType: SQL
       label: Grade Range
       sqlExpression: grade_bucket
-    - expressionType: SQL
+    - datasourceWarning: false
+      expressionType: SQL
       label: Course Grade %
       sqlExpression: ROUND(course_grade, 2)
     custom_form_data: {}
@@ -215,7 +219,7 @@ query_context:
       time_grain_sqla: P1D
       where: ''
     filters:
-    - col: emission_time
+    - col: last_visited
       op: TEMPORAL_RANGE
       val: No filter
     metrics: []
@@ -225,36 +229,32 @@ query_context:
     row_limit: 100
     row_offset: 0
     series_limit: 0
+    time_offsets: []
     url_params: {}
   - annotation_layers: []
     applied_time_extras: {}
     columns:
+    - columnType: BASE_AXIS
+      expressionType: SQL
+      label: enrolled_at
+      sqlExpression: enrolled_at
+      timeGrain: P1D
     - username
     - name
     - email
     - course_name
     - course_run
-    - datasourceWarning: false
-      expressionType: SQL
-      label: Enrollment Date
-      sqlExpression: emission_time
-    - columnType: BASE_AXIS
-      expressionType: SQL
-      label: last_visited
-      sqlExpression: last_visited
-      timeGrain: P1D
+    - last_visited
     - datasourceWarning: false
       expressionType: SQL
       label: Passed/Failed
       sqlExpression: |-
         {% raw %}{{translate_column('approving_state')}}{% endraw %}
-    - datasourceWarning: false
-      expressionType: SQL
+    - expressionType: SQL
       label: Enrollment Track
       sqlExpression: |-
         {% raw %}{{translate_column('enrollment_mode')}}{% endraw %}
-    - datasourceWarning: false
-      expressionType: SQL
+    - expressionType: SQL
       label: Enrollment Status
       sqlExpression: |-
         {% raw %}{{translate_column('enrollment_status')}}{% endraw %}
@@ -262,7 +262,8 @@ query_context:
       expressionType: SQL
       label: Grade Range
       sqlExpression: grade_bucket
-    - expressionType: SQL
+    - datasourceWarning: false
+      expressionType: SQL
       label: Course Grade %
       sqlExpression: ROUND(course_grade, 2)
     custom_form_data: {}
@@ -272,7 +273,7 @@ query_context:
       time_grain_sqla: P1D
       where: ''
     filters:
-    - col: emission_time
+    - col: last_visited
       op: TEMPORAL_RANGE
       val: No filter
     is_rowcount: true
@@ -283,6 +284,7 @@ query_context:
     row_limit: 0
     row_offset: 0
     series_limit: 0
+    time_offsets: []
     url_params: {}
   result_format: json
   result_type: full
