@@ -639,3 +639,4 @@ def find_unused_queries(echo):
         echo(click.style("Potentially unused query files detected:"))
         for file in dataset_query_list:
             echo(f"{file}")
+
