@@ -5,13 +5,15 @@ certified_by: null
 dataset_uuid: da75efef-09ba-4ed0-8b6b-bf11c5c26008
 description: null
 params:
-  adhoc_filters: []
+  adhoc_filters:
+  - clause: WHERE
+    comparator: No filter
+    expressionType: SIMPLE
+    operator: TEMPORAL_RANGE
+    subject: emission_time
   annotation_layers: []
   color_scheme: supersetColors
-  comparison_type: values
   extra_form_data: {}
-  forecastInterval: 0.8
-  forecastPeriods: 10
   groupby: []
   legendMargin: null
   legendOrientation: top
@@ -19,7 +21,6 @@ params:
   metrics:
   - number_of_learners
   only_total: true
-  order_desc: true
   orientation: vertical
   rich_tooltip: true
   row_limit: 10000
@@ -31,11 +32,7 @@ params:
   truncateXAxis: true
   truncate_metric: true
   viz_type: echarts_timeseries_bar
-  xAxisForceCategorical: false
   x_axis: grade_bucket
-  x_axis_sort_asc: true
-  x_axis_sort_series: name
-  x_axis_sort_series_ascending: true
   x_axis_time_format: smart_date
   x_axis_title_margin: 15
   y_axis_bounds:
@@ -46,19 +43,23 @@ params:
   y_axis_title_position: Left
 query_context:
   datasource:
-    id: 63
+    id: 241
     type: table
   force: false
   form_data:
-    adhoc_filters: []
+    adhoc_filters:
+    - clause: WHERE
+      comparator: No filter
+      expressionType: SIMPLE
+      operator: TEMPORAL_RANGE
+      subject: emission_time
     annotation_layers: []
     color_scheme: supersetColors
-    comparison_type: values
-    datasource: 63__table
+    dashboards:
+    - 1401
+    datasource: 241__table
     extra_form_data: {}
     force: false
-    forecastInterval: 0.8
-    forecastPeriods: 10
     groupby: []
     legendMargin: null
     legendOrientation: top
@@ -66,7 +67,6 @@ query_context:
     metrics:
     - number_of_learners
     only_total: true
-    order_desc: true
     orientation: vertical
     result_format: json
     result_type: full
@@ -75,17 +75,13 @@ query_context:
     show_empty_columns: true
     show_legend: true
     show_value: false
-    slice_id: 23
+    slice_id: 881
     sort_series_type: sum
     tooltipTimeFormat: smart_date
     truncateXAxis: true
     truncate_metric: true
     viz_type: echarts_timeseries_bar
-    xAxisForceCategorical: false
     x_axis: grade_bucket
-    x_axis_sort_asc: true
-    x_axis_sort_series: name
-    x_axis_sort_series_ascending: true
     x_axis_time_format: smart_date
     x_axis_title_margin: 15
     y_axis_bounds:
@@ -107,7 +103,10 @@ query_context:
     extras:
       having: ''
       where: ''
-    filters: []
+    filters:
+    - col: emission_time
+      op: TEMPORAL_RANGE
+      val: No filter
     metrics:
     - number_of_learners
     order_desc: true
