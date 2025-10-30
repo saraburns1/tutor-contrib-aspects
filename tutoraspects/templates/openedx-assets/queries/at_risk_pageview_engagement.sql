@@ -5,10 +5,15 @@ select distinct
     page.content_level as content_level,
     page.actor_id as actor_id,
     page.section_subsection_page_engagement as section_subsection_page_engagement,
-    page.username as username,
-    page.name as name,
-    page.email as email
+    page.section_with_name as section_with_name,
+    users.username as username,
+    users.name as name,
+    users.email as email
 from {{ DBT_PROFILE_TARGET_DATABASE }}.fact_pageview_engagement page
+left join
+    {{ ASPECTS_EVENT_SINK_DATABASE }}.user_pii users
+    on (page.actor_id like 'mailto:%' and SUBSTRING(actor_id, 8) = users.email)
+    or page.actor_id = toString(users.external_user_id)
 join
     (
         {% include 'openedx-assets/queries/at_risk_learner_filter.sql' %}

@@ -34,7 +34,7 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # For out default deployment we currently use Celery -> Ralph for transport,
         # so Vector is off by default.
         ("RUN_VECTOR", False),
-        ("RUN_CLICKHOUSE", True),
+        ("RUN_CLICKHOUSE", False),
         ("RUN_RALPH", True),
         ("RUN_SUPERSET", True),
         ("DOCKER_IMAGE_ASPECTS", "edunext/aspects:{{ ASPECTS_VERSION }}"),
