@@ -5,6 +5,7 @@ select
     video.content_level as content_level,
     video.actor_id as actor_id,
     video.section_subsection_video_engagement as section_subsection_video_engagement,
+    video.block_id as block_id,
     users.username as username,
     users.name as name,
     users.email as email
