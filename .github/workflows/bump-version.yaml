@@ -7,18 +7,18 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    outputs:
-      version:  ${{ steps.tag_version.outputs.version }}
-      previous_version: ${{ steps.tag_version.outputs.previous_version }}
-      bump_commit_sha: ${{ steps.bumpversion.outputs.commit_hash }}
-      pr_number: ${{ steps.cpr.outputs.pull-request-number }}
+    # outputs:
+    #   version:  ${{ steps.tag_version.outputs.version }}
+    #   previous_version: ${{ steps.tag_version.outputs.previous_version }}
+    #   bump_commit_sha: ${{ steps.bumpversion.outputs.commit_hash }}
+    #   pr_number: ${{ steps.cpr.outputs.pull-request-number }}
     steps:
       - name: Setup | Checkout Repository on Release Branch
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
       - name: Action | Semantic Version Release
-        id: release
+        id: tag_version
         uses: python-semantic-release/python-semantic-release@v10.5.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -39,12 +39,12 @@ jobs:
         if: steps.tag_version.outputs.version
         uses: stefanzweifel/changelog-updater-action@v1.12.0
         with:
-          latest-version: v${{ steps.tag_version.outputs.version }}
-          release-notes: ${{ steps.tag_version.outputs.changelog }}
+          latest-version: ${{ steps.tag_version.outputs.tag }}
+          release-notes: ${{ steps.tag_version.outputs.release_notes }}
       - name: Push branch
         if: steps.tag_version.outputs.version
         run: |
-          branch_name="bot/v${{ steps.tag_version.outputs.version }}"
+          branch_name="bot/${{ steps.tag_version.outputs.tag }}"
           git fetch --prune origin
           if git show-ref --quiet refs/remotes/origin/$branch_name; then
             git push --delete origin $branch_name
@@ -55,17 +55,17 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.SEMANTIC_RELEASE_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           title: "chore: preparing release ${{ steps.tag_version.outputs.version }}"
           commit-message: "chore: preparing release ${{ steps.tag_version.outputs.version }}"
-          branch: "bot/v${{ steps.tag_version.outputs.version }}"
+          branch: "bot/${{ steps.tag_version.outputs.tag }}"
           base: main
           body: |
             Automated version bump for release ${{ steps.tag_version.outputs.version }}.
 
             This pull request was automatically generated. It includes the following changes:
 
-            - Version: v${{ steps.tag_version.outputs.version }}
+            - Version: ${{ steps.tag_version.outputs.tag }}
 
             ${{ steps.tag_version.outputs.changelog }}
 
