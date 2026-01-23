@@ -1,5 +1,4 @@
 {
-    "token": "${{ secrets.versiontest }}",
     "release-type": "python",
     "skip-labeling": true,
     "extra-files": [
