@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.0.0 - 2026-01-23
+
+### v4.0.0 (2026-01-23)
+
+#### Features
+
+- Testing ([`0ba6839`](https://github.com/saraburns1/tutor-contrib-aspects/commit/0ba68396196cd4134f7bcf18911c1bda64bf6622))
+  
+- Testing ([`77003cd`](https://github.com/saraburns1/tutor-contrib-aspects/commit/77003cdb70fd162011ed0ff71fc0225fecf00c3e))
+  
+- Testing ([`45cf292`](https://github.com/saraburns1/tutor-contrib-aspects/commit/45cf292e5bb4b054f13d114375a509c3cc8dc55b))
+  
+- Testing ([`59c802f`](https://github.com/saraburns1/tutor-contrib-aspects/commit/59c802f37938aba2b1d74003429cc7e7dc2c69d5))
+  
+- Testing ([`0ff0e33`](https://github.com/saraburns1/tutor-contrib-aspects/commit/0ff0e33b3bf5d867ce95f3f406a6be3774b824e3))
+  
+- Testing ([`b6ca2c8`](https://github.com/saraburns1/tutor-contrib-aspects/commit/b6ca2c8d06c319400ed8c51fe1546d90dee946c3))
+  
+
+
+---
+
+**Detailed Changes**: [v3.0.0...v4.0.0](https://github.com/saraburns1/tutor-contrib-aspects/compare/v3.0.0...v4.0.0)
+
 ## v2.5.1 - 2025-12-09
 
 ### [2.5.1](https://github.com/openedx/tutor-contrib-aspects/compare/v2.5.0...v2.5.1) (2025-12-09)
