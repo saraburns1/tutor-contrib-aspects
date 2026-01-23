@@ -7,11 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
       - name: Get next version
         id: tag_version
         uses: googleapis/release-please-action@v4
         with:
-          token: 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
+          token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
