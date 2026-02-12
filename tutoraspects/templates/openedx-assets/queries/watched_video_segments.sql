@@ -56,9 +56,7 @@ select
         ':'
     ) as video_number,
     concat(
-        video_number,
-        ' - ',
-        splitByString(' - ', blocks.display_name_with_location)[2]
+        video_number, ' - ', splitByString(' - ', blocks.display_name_with_location)[2]
     ) as video_name_location,
     concat(
         '<a href="',

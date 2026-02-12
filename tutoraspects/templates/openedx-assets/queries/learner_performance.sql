@@ -20,10 +20,4 @@ left join
     {{ DBT_PROFILE_TARGET_DATABASE }}.dim_learner_last_response as last_response
     on status.org = last_response.org
 group by
-    org,
-    course_key,
-    course_name,
-    course_run,
-    actor_id,
-    course_grade,
-    approving_state
+    org, course_key, course_name, course_run, actor_id, course_grade, approving_state
