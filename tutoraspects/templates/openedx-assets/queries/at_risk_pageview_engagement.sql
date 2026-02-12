@@ -6,7 +6,6 @@ select distinct
     page.actor_id as actor_id,
     page.section_subsection_page_engagement as section_subsection_page_engagement,
     page.section_with_name as section_with_name,
-    page.course_order as course_order,
     users.username as username,
     users.name as name,
     users.email as email

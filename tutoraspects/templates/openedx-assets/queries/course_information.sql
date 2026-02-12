@@ -1,7 +1,7 @@
 select
     enrollment.org as org,
     names.course_name as course_name,
-    enrollment.course_run as course_run,
+    names.course_run as course_run,
     enrollment.actor_id as actor_id,
     enrollment.enrollment_mode as enrollment_mode,
     case

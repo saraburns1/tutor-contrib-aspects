@@ -12,7 +12,7 @@ with
     )
 select
     most_recent.id as tag_id,
-    most_recent.rownum as tag_rownum,
+    most_recent.rownum as rownum,
     most_recent.tag as tag,
     tags.course_key as course_key
 from most_recent

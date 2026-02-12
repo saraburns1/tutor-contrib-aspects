@@ -11,7 +11,7 @@ select
     users.name as name,
     users.email as email,
     status.enrolled_at as enrolled_at,
-    status.last_visited as last_visited,
+    at_risk_learners.last_visited as last_visited,
     names.course_name as course_name,
     names.course_run as course_run
 from {{ DBT_PROFILE_TARGET_DATABASE }}.dim_student_status status
