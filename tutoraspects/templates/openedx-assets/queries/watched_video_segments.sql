@@ -32,7 +32,8 @@ with
                 course_key in (select course_key from course_keys)
                 or (select count(1) from course_keys) = 1
             )
-    ), final_results as (
+    ),
+    final_results as (
         select
             watched_segments.org as org,
             watched_segments.course_key as course_key,
@@ -56,7 +57,9 @@ with
                 ':'
             ) as video_number,
             concat(
-                video_number, ' - ', splitByString(' - ', blocks.display_name_with_location)[2]
+                video_number,
+                ' - ',
+                splitByString(' - ', blocks.display_name_with_location)[2]
             ) as video_name_location,
             concat(
                 '<a href="',
@@ -83,7 +86,8 @@ with
             {{ DBT_PROFILE_TARGET_DATABASE }}.dim_course_blocks blocks
             on (
                 watched_segments.course_key = blocks.course_key
-                and splitByString('/xblock/', watched_segments.object_id)[-1] = blocks.block_id
+                and splitByString('/xblock/', watched_segments.object_id)[-1]
+                = blocks.block_id
             )
         where 1 = 1 {% include 'openedx-assets/queries/common_filters.sql' %}
         group by
@@ -104,7 +108,7 @@ with
             name,
             email
     )
-select 
+select
     org,
     course_key,
     actor_id,
