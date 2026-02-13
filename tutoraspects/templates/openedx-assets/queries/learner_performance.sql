@@ -19,5 +19,8 @@ join
 left join
     {{ DBT_PROFILE_TARGET_DATABASE }}.dim_learner_last_response as last_response
     on status.org = last_response.org
+    and status.course_key = last_response.course_key
+    and status.actor_id = last_response.actor_id
+where 1 = 1 {% include 'openedx-assets/queries/common_filters.sql' %}
 group by
     org, course_key, course_name, course_run, actor_id, course_grade, approving_state
