@@ -345,9 +345,9 @@ def import_superset_assets(
 
     with ZipFile(file.name) as zip_file:
         for asset_path in zip_file.namelist():
-            if "metadata.yaml" in asset_path:
+            if "metadata.yaml" in asset_path or "tags.yaml" in asset_path:
                 continue
-            with zip_file.open(asset_path) as asset_file or "tags.yaml" in asset_path:
+            with zip_file.open(asset_path) as asset_file:
                 content = yaml.safe_load(asset_file)
                 out_path, needs_review = validate_asset_file(
                     asset_path, content, echo, assets_path
