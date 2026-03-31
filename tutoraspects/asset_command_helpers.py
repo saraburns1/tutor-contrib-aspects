@@ -211,7 +211,7 @@ class DatasetAsset(Asset):
     """
 
     path = "datasets"
-    templated_vars = ["schema", "table_name", "sql", "filter_values"]
+    templated_vars = ["schema", "table_name", "sql"]
     omitted_vars = ["extra.certification"]
 
     def process(self, content: dict, existing: dict):
@@ -345,7 +345,7 @@ def import_superset_assets(
 
     with ZipFile(file.name) as zip_file:
         for asset_path in zip_file.namelist():
-            if "metadata.yaml" in asset_path or "tags.yaml" in asset_path:
+            if any(asset in asset_path for asset in ["metadata.yaml", "tags.yaml", "themes.yaml"]):
                 continue
             with zip_file.open(asset_path) as asset_file:
                 content = yaml.safe_load(asset_file)
