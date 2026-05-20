@@ -1,0 +1,8 @@
+944dd2a Refactor bump-version-manual workflow for clarity
+0c6ee5e fix: Rename workflow and update file paths in YAML
+f1e59fc fix: Refactor bump-version-manual workflow for clarity
+58b3953 fix: Rename config file from config.yaml to config.yml
+e3ce72a fix: Fix path to _about_.py in workflow file
+6ef07f2 fix: Fix path to _about_.py in version bump workflow
+41f12cd feat: Add manual version bump workflow
+e4f4950 fix: Update dataset UUID in Operator Dashboard YAML

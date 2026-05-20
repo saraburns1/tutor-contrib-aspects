@@ -1,3 +1,22 @@
+# Release v2.5.3 (2026-05-20)
+
+
+
+### 🚀 Features
+
+- feat: Add manual version bump workflow
+
+### 🐛 Bug Fixes
+
+- fix: Rename workflow and update file paths in YAML
+- fix: Refactor bump-version-manual workflow for clarity
+- fix: Rename config file from config.yaml to config.yml
+- fix: Fix path to _about_.py in workflow file
+- fix: Fix path to _about_.py in version bump workflow
+- fix: Update dataset UUID in Operator Dashboard YAML
+
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
