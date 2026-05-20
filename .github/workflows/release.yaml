@@ -8,6 +8,10 @@ on:
       - main
   workflow_dispatch:
     inputs:
+      ref:
+        description: 'Branch, tag, or SHA to release from (default: main)'
+        required: false
+        default: 'main'
       dry_run:
         description: 'Build and validate the package without publishing to PyPI'
         required: false
@@ -29,6 +33,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: ${{ inputs.ref || github.ref }}
           fetch-depth: 0
 
       - name: Read version from package
