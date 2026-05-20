@@ -1,73 +1,135 @@
-name: Bump version and changelog
+name: Bump Version (Manually)
+
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      base_tag:
+        description: 'The previous release tag to base this new version on (e.g., v1.4.2)'
+        required: true
+      bump_type:
+        description: 'SemVer increment type'
+        required: true
+        default: 'patch'
+        type: choice
+        options: [patch, minor, major]
 
 jobs:
-  bumpversion:
+  prepare-pr:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    outputs:
-      version:  ${{ steps.tag_version.outputs.new_version }}
-      previous_tag: ${{ steps.tag_version.outputs.previous_tag }}
-      bump_commit_sha: ${{ steps.bumpversion.outputs.commit_hash }}
-      pr_number: ${{ steps.cpr.outputs.pull-request-number }}
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v6
-      - name: Get next version
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
+      - name: Checkout Targeted Branch Code
+        uses: actions/checkout@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: false
-          default_prerelease_bump: false
-          dry_run: true
-          # commit_analyzer_preset: conventionalcommits # uncomment this line when commit_analyzer_preset is an accepted setting
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-      - name: Create bumpversion
-        if: steps.tag_version.outputs.new_version
-        id: bumpversion
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0 
+
+      - name: Force Fetch Tags and Remote History
         run: |
-          pip install bump2version
-          bump2version --new-version ${{ steps.tag_version.outputs.new_version }} setup.cfg tutoraspects/__about__.py .ci/config.yml
-      - name: Update Changelog
-        if: steps.tag_version.outputs.new_version
-        uses: stefanzweifel/changelog-updater-action@v1.12.0
-        with:
-          latest-version: v${{ steps.tag_version.outputs.new_version }}
-          release-notes: ${{ steps.tag_version.outputs.changelog }}
-      - name: Push branch
-        if: steps.tag_version.outputs.new_version
+          git fetch --tags --force origin
+          git fetch origin ${{ github.ref_name }}
+
+      - name: Calculate Next Version
+        id: semver
         run: |
-          branch_name="bot/v${{ steps.tag_version.outputs.new_version }}"
-          git fetch --prune origin
-          if git show-ref --quiet refs/remotes/origin/$branch_name; then
-            git push --delete origin $branch_name
+          BASE="${{ inputs.base_tag }}"
+          CLEAN_VER="${BASE#v}"
+          IFS='.' read -r major minor patch <<< "$CLEAN_VER"
+          
+          if [ "${{ inputs.bump_type }}" = "major" ]; then major=$((major + 1)); minor=0; patch=0
+          elif [ "${{ inputs.bump_type }}" = "minor" ]; then minor=$((minor + 1)); patch=0
+          else patch=$((patch + 1)); fi
+          
+          NEXT_VERSION="v$major.$minor.$patch"
+          if git rev-parse "$NEXT_VERSION" >/dev/null 2>&1; then
+            echo "Error: Target version '$NEXT_VERSION' already exists." && exit 1
           fi
-          git checkout -b $branch_name || git checkout $branch_name
-          git push origin $branch_name
+          echo "new_tag=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "raw_version=$major.$minor.$patch" >> $GITHUB_OUTPUT
+
+      - name: Update Version in Project Files
+        run: |
+          NEW_V="${{ steps.semver.outputs.raw_version }}"
+          sed -i -E "s/(__version__ *= *['\"])[^'\"]*(['\"])/\1$NEW_V\2/g" "tutoraspects/__about__.py"
+          sed -i -E "s/(ASPECTS_VERSION\s*:\s*)[0-9]+\.[0-9]+\.[0-9]+/\1$NEW_V/g" ".ci/config.yml"
+
+      - name: Process Changelog Delta and Update Files
+        id: git_changelog
+        shell: python
+        run: |
+          import subprocess, os, re
+          from datetime import datetime
+
+          base, new = "${{ inputs.base_tag }}", "${{ steps.semver.outputs.new_tag }}"
+          repo_url = "https://github.com{{ github.repository }}"
+          
+          # Safely fetch git log commits since the base tag
+          log_output = subprocess.check_output(["git", "log", f"{base}..HEAD", "--oneline"]).decode('utf-8')
+          
+          groups = {"Features": [], "Bug Fixes": [], "Maintenance & Refactoring": [], "Miscellaneous Updates": []}
+          
+          for line in filter(None, log_output.splitlines()):
+              msg = line.split(" ", 1)[1]
+              
+              # Extract PR number if present
+              pr_match = re.search(r'#(\d+)', msg)
+              
+              if pr_match:
+                  pr_num = pr_match.group(1)
+                  # Formats a clean markdown hyperlink to the specific pull request number
+                  pr_suffix = f" ([#{pr_num}]({repo_url}/pull/{pr_num}))"
+              else:
+                  pr_suffix = ""
+              
+              # Clean default GitHub merge messages to isolate the actual commit reason
+              if msg.startswith("Merge pull request"):
+                  msg = msg.split(" from ")[-1].split("\n")[0]
+              
+              # Clean any raw numbers inside the core message text to prevent duplicating it
+              clean_msg = re.sub(r'\s*\(?#\d+\)?', '', msg).strip()
+              bullet = f"- {clean_msg}{pr_suffix}"
+              
+              if re.search(r'^feat', clean_msg, re.I): groups["Features"].append(bullet)
+              elif re.search(r'^fix|^bug', clean_msg, re.I): groups["Bug Fixes"].append(bullet)
+              elif re.search(r'^chore|^docs|^refactor', clean_msg, re.I): groups["Maintenance & Refactoring"].append(bullet)
+              else: groups["Miscellaneous Updates"].append(bullet)
+
+          # Compile Entry Block using clean headers
+          entry = f"## Changes since release {base}\n"
+          for title, items in groups.items():
+              if items: entry += f"\n### {title}\n" + "\n".join(items) + "\n"
+
+          # Write to runner environment variables safely for the PR body
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"BODY<<EOF\n{entry.strip()}\nEOF\n")
+
+          # Splicing CHANGELOG.md precisely below line 7
+          c_file = "CHANGELOG.md"
+          lines = open(c_file).readlines() if os.path.exists(c_file) else []
+          while len(lines) < 7: lines.append("\n")
+          
+          date_str = datetime.now().strftime("%Y-%m-%d")
+          file_block = f"# Release {new} ({date_str})\n" + entry.replace(f"## Changes since release {base}\n", "")
+          
+          updated_content = "".join(lines[:7]) + "\n" + file_block.strip() + "\n\n---\n\n" + "".join(lines[7:])
+          open(c_file, "w").write(updated_content)
+
       - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.SEMANTIC_RELEASE_GITHUB_TOKEN }}
-          title: "chore: preparing release ${{ steps.tag_version.outputs.new_version }}"
-          commit-message: "chore: preparing release ${{ steps.tag_version.outputs.new_version }}"
-          branch: "bot/v${{ steps.tag_version.outputs.new_version }}"
-          base: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: bump version to ${{ steps.semver.outputs.raw_version }} and update CHANGELOG [skip ci]"
+          base: ${{ github.ref_name }} 
+          branch: "release/${{ steps.semver.outputs.new_tag }}"
+          title: "Release ${{ steps.semver.outputs.new_tag }}"
           body: |
-            Automated version bump for release ${{ steps.tag_version.outputs.new_version }}.
-
-            This pull request was automatically generated. It includes the following changes:
-
-            - Version: v${{ steps.tag_version.outputs.new_version }}
-            - Previous version: ${{ steps.tag_version.outputs.previous_tag }}
-
-            ${{ steps.tag_version.outputs.changelog }}
-
-            No code changes are included in this pull request. The purpose of this PR is to trigger a version bump for the project.
-
-            Once the pull request is merged, a new GitHub release will be created with the updated version.
+            This PR prepares the release for version **${{ steps.semver.outputs.new_tag }}** branching from base version `${{ inputs.base_tag }}`.
+            
+            Once merged, the publication pipeline will trigger automatically.
+            
+            ### Proposed Release Notes:
+            ${{ steps.git_changelog.outputs.BODY }}
+          labels: |
+            release-pr
