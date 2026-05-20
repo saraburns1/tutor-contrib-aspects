@@ -132,7 +132,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: bump version to ${{ steps.git_changelog.outputs.raw_version }} and update CHANGELOG [skip ci]"
           base: ${{ github.ref_name }}
-          branch: "release/${{ steps.git_changelog.outputs.new_tag }}"
+          branch: "bot/v${{ steps.git_changelog.outputs.raw_version }}"
           title: "Release ${{ steps.git_changelog.outputs.new_tag }}"
           body: |
             This PR prepares the release for version **${{ steps.git_changelog.outputs.new_tag }}** branching from base version `${{ inputs.base_tag }}`.
