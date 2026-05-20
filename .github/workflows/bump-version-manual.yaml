@@ -6,15 +6,6 @@ on:
       base_tag:
         description: 'The previous release tag to base this new version on (e.g., v1.4.2)'
         required: true
-      bump_type:
-        description: 'SemVer increment type'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
 
 jobs:
   prepare-pr:
@@ -34,136 +25,123 @@ jobs:
           git fetch --tags --force origin
           git fetch origin ${{ github.ref_name }}
 
-      - name: Calculate Next Version
-        id: semver
-        run: |
-          BASE="${{ inputs.base_tag }}"
-          BUMP="${{ inputs.bump_type }}"
-          CLEAN_VER="${BASE#v}"
-          
-          IFS='.' read -r major minor patch <<< "$CLEAN_VER"
-          
-          if [ "$BUMP" = "major" ]; then
-            major=$((major + 1)); minor=0; patch=0
-          elif [ "$BUMP" = "minor" ]; then
-            minor=$((minor + 1)); patch=0
-          elif [ "$BUMP" = "patch" ]; then
-            patch=$((patch + 1))
-          fi
-          
-          NEXT_VERSION="v$major.$minor.$patch"
-          RAW_VERSION="$major.$minor.$patch"
-          
-          if git rev-parse "$NEXT_VERSION" >/dev/null 2>&1; then
-            echo "Error: Target version '$NEXT_VERSION' already exists."
-            exit 1
-          fi
-          
-          echo "new_tag=$NEXT_VERSION" >> $GITHUB_OUTPUT
-          echo "raw_version=$RAW_VERSION" >> $GITHUB_OUTPUT
-
-      - name: Update Version in Project Files
-        run: |
-          NEW_V="${{ steps.semver.outputs.raw_version }}"
-          
-          # 1. Update Python Metadata File (Inside tutoraspects folder)
-          PY_FILE="tutoraspects/__about__.py"
-          if [ ! -f "$PY_FILE" ]; then
-            echo "Error: $PY_FILE not found!"
-            exit 1
-          fi
-          sed -i -E "s/(__version__ *= *['\"])[^'\"]*(['\"])/\1$NEW_V\2/g" "$PY_FILE"
-          
-          # 2. Update Continuous Integration Configuration
-          YAML_FILE=".ci/config.yml"
-          if [ ! -f "$YAML_FILE" ]; then
-            echo "Error: $YAML_FILE not found!"
-            exit 1
-          fi
-          sed -i -E "s/(ASPECTS_VERSION\s*:\s*)[0-9]+\.[0-9]+\.[0-9]+/\1$NEW_V/g" "$YAML_FILE"
-
-      - name: Process Changelog Delta and Update Files
+      - name: Process Version Calculation and Changelog
         id: git_changelog
+        shell: python
         run: |
-          BASE_TAG="${{ inputs.base_tag }}"
-          NEW_TAG="${{ steps.semver.outputs.new_tag }}"
-          CHANGELOG_FILE="CHANGELOG.md"
-          CURRENT_DATE=$(date +%Y-%m-%d)
+          import subprocess, os, re, sys
+          from datetime import datetime
+
+          base = "${{ inputs.base_tag }}"
+          repo_url = "https://github.com{{ github.repository }}"
           
-          if ! git rev-parse "$BASE_TAG" >/dev/null 2>&1; then
-            echo "Error: Base tag $BASE_TAG does not exist in local git history."
-            exit 1
-          fi
-
-          # 1. Build string outputs into memory variables
-          FEAT_CHANGES=""
-          FIX_CHANGES=""
-          CHORE_CHANGES=""
-          MISC_CHANGES=""
+          if subprocess.call(["git", "rev-parse", base], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) != 0:
+              print(f"::error::Base tag {base} does not exist in local git history.")
+              sys.exit(1)
           
-          while IFS= read -r line; do
-            PR_MSG=$(echo "$line" | sed -E 's/^[a-f0-9]+ //')
-            MISC_CHANGES="${MISC_CHANGES}\n- ${PR_MSG}"
-            
-            if [[ "$PR_MSG" =~ "feat" ]]; then
-              FEAT_CHANGES="${FEAT_CHANGES}\n- ${PR_MSG}"
-            elif [[ "$PR_MSG" =~ "fix" || "$PR_MSG" =~ "bug" ]]; then
-              FIX_CHANGES="${FIX_CHANGES}\n- ${PR_MSG}"
-            elif [[ "$PR_MSG" =~ "chore" || "$PR_MSG" =~ "docs" || "$PR_MSG" =~ "refactor" ]]; then
-              CHORE_CHANGES="${CHORE_CHANGES}\n- ${PR_MSG}"
-            fi
-          done < <(git log ${BASE_TAG}..HEAD --oneline)
-
-          # 2. Compile PR Body Context
-          PR_MARKDOWN="## Changes since release $BASE_TAG"
-          if [ ! -z "$FEAT_CHANGES" ]; then PR_MARKDOWN="${PR_MARKDOWN}\n\n### 🚀 Features${FEAT_CHANGES}"; fi
-          if [ ! -z "$FIX_CHANGES" ]; then PR_MARKDOWN="${PR_MARKDOWN}\n\n### 🐛 Bug Fixes${FIX_CHANGES}"; fi
-          if [ ! -z "$CHORE_CHANGES" ]; then PR_MARKDOWN="${PR_MARKDOWN}\n\n### 🧰 Maintenance & Refactoring${CHORE_CHANGES}"; fi
-          if [ -z "$FEAT_CHANGES" ] && [ -z "$FIX_CHANGES" ] && [ -z "$CHORE_CHANGES" ]; then
-            PR_MARKDOWN="${PR_MARKDOWN}\n\n### 📝 Miscellaneous Updates${MISC_CHANGES}"
-          fi
+          # 1. Fetch git commits to parse messages
+          log_output = subprocess.check_output(["git", "log", f"{base}..HEAD", "--oneline"]).decode('utf-8')
           
-          # 3. Compile CHANGELOG.md Entry Block
-          ENTRY_MARKDOWN=""
-          if [ ! -z "$FEAT_CHANGES" ]; then ENTRY_MARKDOWN="${ENTRY_MARKDOWN}\n### 🚀 Features${FEAT_CHANGES}"; fi
-          if [ ! -z "$FIX_CHANGES" ]; then ENTRY_MARKDOWN="${ENTRY_MARKDOWN}\n### 🐛 Bug Fixes${FIX_CHANGES}"; fi
-          if [ ! -z "$CHORE_CHANGES" ]; then ENTRY_MARKDOWN="${ENTRY_MARKDOWN}\n### 🧰 Maintenance & Refactoring${CHORE_CHANGES}"; fi
-          if [ -z "$FEAT_CHANGES" ] && [ -z "$FIX_CHANGES" ] && [ -z "$CHORE_CHANGES" ]; then
-            ENTRY_MARKDOWN="${ENTRY_MARKDOWN}\n### 📝 Miscellaneous Updates${MISC_CHANGES}"
-          fi
+          groups = {"Features": [], "Bug Fixes": [], "Maintenance & Refactoring": [], "Miscellaneous Updates": []}
+          bump_decision = "patch" 
 
-          # 4. Splice content starting exactly on line 8
-          if [ ! -f "$CHANGELOG_FILE" ] || [ $(wc -l < "$CHANGELOG_FILE") -lt 7 ]; then
-             # Fallback if file doesn't exist or is too short to have 7 header lines
-             echo -e "# Changelog\n\n\n\n\n\n\n# Release ${NEW_TAG} (${CURRENT_DATE})\n${ENTRY_MARKDOWN}\n\n---\n" > "$CHANGELOG_FILE"
-          else
-             # Capture lines 1 to 7 precisely
-             head -n 7 "$CHANGELOG_FILE" > changelog_spliced.md
-             
-             # Append your new release changes immediately under line 7
-             echo -e "\n# Release ${NEW_TAG} (${CURRENT_DATE})\n${ENTRY_MARKDOWN}\n\n---\n" >> changelog_spliced.md
-             
-             # Append all old historical entries from line 8 down to the end of the file
-             tail -n +8 "$CHANGELOG_FILE" >> changelog_spliced.md
-             
-             mv changelog_spliced.md "$CHANGELOG_FILE"
-          fi
+          for line in filter(None, log_output.splitlines()):
+              parts = line.split(" ", 1)
+              if len(parts) < 2:
+                  continue
+              sha, working_msg = parts[0], parts[1].strip()
+              
+              # Automatically calculate version bump based on conventional commit standards
+              if "BREAKING CHANGE" in working_msg or re.search(r'^[a-z]+!(\(.*\))?:', working_msg):
+                  bump_decision = "major"
+              elif working_msg.startswith("feat") and bump_decision != "major":
+                  bump_decision = "minor"
 
-          # 5. Output values safely to runner memory environment
-          echo "BODY<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$PR_MARKDOWN" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+              # Format entries with linkified PR numbers
+              pr_match = re.search(r'#(\d+)', working_msg)
+              pr_suffix = f" ([#{pr_match.group(1)}]({repo_url}/pull/{pr_match.group(1)}))" if pr_match else ""
+              
+              if working_msg.startswith("Merge pull request"):
+                  split_parts = working_msg.split(" from ")
+                  if len(split_parts) > 1:
+                      working_msg = split_parts[-1].split("\n")[0]
+              
+              clean_msg = re.sub(r'\s*\(?#\d+\)?', '', working_msg).strip()
+              bullet = f"- {clean_msg}{pr_suffix}"
+              
+              if re.search(r'^feat', clean_msg, re.I): groups["Features"].append(bullet)
+              elif re.search(r'^fix|^bug', clean_msg, re.I): groups["Bug Fixes"].append(bullet)
+              elif re.search(r'^chore|^docs|^refactor', clean_msg, re.I): groups["Maintenance & Refactoring"].append(bullet)
+              else: groups["Miscellaneous Updates"].append(bullet)
+
+          # 2. Complete Mathematical SemVer Bump Calculations
+          clean_base = base.lstrip('v')
+          major, minor, patch = map(int, clean_base.split('.'))
+          
+          if bump_decision == "major": major, minor, patch = major + 1, 0, 0
+          elif bump_decision == "minor": minor, patch = minor + 1, 0
+          elif bump_decision == "patch": patch += 1
+
+          new_tag = f"v{major}.{minor}.{patch}"
+          raw_version = f"{major}.{minor}.{patch}"
+
+          if subprocess.call(["git", "rev-parse", new_tag], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+              print(f"::error::Calculated target version '{new_tag}' already exists.")
+              sys.exit(1)
+
+          # 3. Update tutoraspects/__about__.py and .ci/config.yml inline with fresh atomic writes
+          py_file, yaml_file = "tutoraspects/__about__.py", ".ci/config.yml"
+          
+          for f_path in [py_file, yaml_file]:
+              if not os.path.exists(f_path):
+                  print(f"::error::Required file {f_path} not found!")
+                  sys.exit(1)
+
+          with open(py_file, 'r') as f:
+              py_content = re.sub(r"(__version__ *= *['\"])[^'\"]*(['\"])", f"\\1{raw_version}\\2", f.read())
+          with open(py_file, 'w') as f:
+              f.write(py_content)
+
+          with open(yaml_file, 'r') as f:
+              yaml_content = re.sub(r"(ASPECTS_VERSION\s*:\s*)[0-9]+\.[0-9]+\.[0-9]+", f"\\1{raw_version}", f.read())
+          with open(yaml_file, 'w') as f:
+              f.write(yaml_content)
+
+          # 4. Assemble Changelog String
+          entry = f"## Changes since release {base}\n"
+          for title, items in groups.items():
+              if items: entry += f"\n### {title}\n" + "\n".join(items) + "\n"
+
+          # Write environment parameters out safely using multiline EOF blocks
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"new_tag={new_tag}\n")
+              f.write(f"raw_version={raw_version}\n")
+              f.write(f"BODY<<EOF\n{entry.strip()}\nEOF\n")
+
+          # 5. Splice entries into CHANGELOG.md precisely at line 8
+          c_file = "CHANGELOG.md"
+          lines = open(c_file).readlines() if os.path.exists(c_file) else []
+          while len(lines) < 7: lines.append("\n")
+          
+          date_str = datetime.now().strftime("%Y-%m-%d")
+          file_block = f"# Release {new_tag} ({date_str})\n" + entry.replace(f"## Changes since release {base}\n", "")
+          
+          updated_content = "".join(lines[:7]) + "\n" + file_block.strip() + "\n\n---\n\n" + "".join(lines[7:])
+          with open(c_file, "w") as f:
+              f.write(updated_content)
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: bump version to ${{ steps.semver.outputs.raw_version }} and update CHANGELOG [skip ci]"
+          commit-message: "chore: bump version to ${{ steps.git_changelog.outputs.raw_version }} and update CHANGELOG [skip ci]"
           base: ${{ github.ref_name }} 
-          branch: "release/${{ steps.semver.outputs.new_tag }}"
-          title: "Release ${{ steps.semver.outputs.new_tag }}"
+          branch: "release/${{ steps.git_changelog.outputs.new_tag }}"
+          title: "Release ${{ steps.git_changelog.outputs.new_tag }}"
           body: |
-            This PR prepares the release for version **${{ steps.semver.outputs.new_tag }}** branching from base version `${{ inputs.base_tag }}`.
+            This PR prepares the release for version **${{ steps.git_changelog.outputs.new_tag }}** branching from base version `${{ inputs.base_tag }}`.
+            
+            The SemVer bump type was automatically calculated by parsing conventional commits merged into this branch.
             
             Once merged, the publication pipeline will trigger automatically.
             
