@@ -101,7 +101,6 @@ jobs:
           CHORE_CHANGES=""
           MISC_CHANGES=""
           
-          # Read Git history directly via string stream without leaving any disk files behind
           while IFS= read -r line; do
             PR_MSG=$(echo "$line" | sed -E 's/^[a-f0-9]+ //')
             MISC_CHANGES="${MISC_CHANGES}\n- ${PR_MSG}"
@@ -133,9 +132,22 @@ jobs:
             ENTRY_MARKDOWN="${ENTRY_MARKDOWN}\n### 📝 Miscellaneous Updates${MISC_CHANGES}"
           fi
 
-          # 4. Prepend directly to CHANGELOG.md using inline stacking
-          if [ ! -f "$CHANGELOG_FILE" ]; then touch "$CHANGELOG_FILE"; fi
-          echo -e "# Release ${NEW_TAG} (${CURRENT_DATE})\n${ENTRY_MARKDOWN}\n\n---\n\n$(cat $CHANGELOG_FILE)" > "$CHANGELOG_FILE"
+          # 4. Splice content starting exactly on line 8
+          if [ ! -f "$CHANGELOG_FILE" ] || [ $(wc -l < "$CHANGELOG_FILE") -lt 7 ]; then
+             # Fallback if file doesn't exist or is too short to have 7 header lines
+             echo -e "# Changelog\n\n\n\n\n\n\n# Release ${NEW_TAG} (${CURRENT_DATE})\n${ENTRY_MARKDOWN}\n\n---\n" > "$CHANGELOG_FILE"
+          else
+             # Capture lines 1 to 7 precisely
+             head -n 7 "$CHANGELOG_FILE" > changelog_spliced.md
+             
+             # Append your new release changes immediately under line 7
+             echo -e "\n# Release ${NEW_TAG} (${CURRENT_DATE})\n${ENTRY_MARKDOWN}\n\n---\n" >> changelog_spliced.md
+             
+             # Append all old historical entries from line 8 down to the end of the file
+             tail -n +8 "$CHANGELOG_FILE" >> changelog_spliced.md
+             
+             mv changelog_spliced.md "$CHANGELOG_FILE"
+          fi
 
           # 5. Output values safely to runner memory environment
           echo "BODY<<EOF" >> $GITHUB_OUTPUT
