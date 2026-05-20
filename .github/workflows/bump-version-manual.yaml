@@ -51,16 +51,15 @@ jobs:
 
           FEAT="" FIX="" CHORE="" MISC="" BUMP="patch"
 
-          # FIX: Use --format=%s to get only the subject line, avoiding issues with
-          # backslashes, backticks, or subshell syntax in commit messages
-          COMMIT_LOG=$(git log "${BASE}..HEAD" --format=%s)
+          # FIX: Use --format=%H%n%s to capture full hash and subject line together
+          COMMIT_LOG=$(git log "${BASE}..HEAD" --format="%H%n%s%n---")
 
           # FIX: Exit early with a clear error if there are no commits to release
           if [ -z "$COMMIT_LOG" ]; then
             echo "::error::No commits found between ${BASE} and HEAD. Nothing to release." && exit 1
           fi
 
-          while IFS= read -r RAW_MSG || [ -n "$RAW_MSG" ]; do
+          while IFS= read -r FULL_HASH && IFS= read -r RAW_MSG && IFS= read -r _SEP; do
             [ -z "$RAW_MSG" ] && continue
 
             if [ "$FORCE_BUMP" = "auto" ]; then
@@ -68,16 +67,12 @@ jobs:
               elif echo "$RAW_MSG" | grep -q "^feat" && [ "$BUMP" != "major" ]; then BUMP="minor"; fi
             fi
 
-            PR_SUFFIX=""
-            if echo "$RAW_MSG" | grep -Eq '#[0-9]+'; then
-              PR_NUM=$(echo "$RAW_MSG" | grep -Eo '#[0-9]+' | head -n 1 | tr -d '#')
-              PR_SUFFIX=" ([#${PR_NUM}](${REPO_URL}/pull/${PR_NUM}))"
-            fi
+            SHORT_HASH="${FULL_HASH:0:7}"
+            COMMIT_LINK=" ([${SHORT_HASH}](${REPO_URL}/commit/${FULL_HASH}))"
 
             W_MSG=$(echo "$RAW_MSG" | sed -E 's/^Merge pull request #[0-9]+ from [^ ]+ //I')
-            # FIX: Replaced xargs trim with sed to avoid mangling messages containing special characters
             CLEAN_MSG=$(echo "$W_MSG" | sed -E 's/[[:space:]]*\(?#[0-9]+\)?//g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-            BULLET="- ${CLEAN_MSG}${PR_SUFFIX}"
+            BULLET="* ${CLEAN_MSG}${COMMIT_LINK}"
 
             if echo "$CLEAN_MSG" | grep -iq "^feat"; then FEAT="${FEAT}\n${BULLET}"
             elif echo "$CLEAN_MSG" | grep -Eiq '^fix|^bug'; then FIX="${FIX}\n${BULLET}"
