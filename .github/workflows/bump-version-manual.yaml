@@ -61,7 +61,7 @@ jobs:
           NEW_V="${{ steps.semver.outputs.raw_version }}"
           
           # 1. Update tutoraspects/_about_.py
-          PY_FILE="../tutoraspects/_about_.py"
+          PY_FILE="tutoraspects/__about__.py"
           if [ ! -f "$PY_FILE" ]; then
             echo "Error: $PY_FILE not found!"
             exit 1
