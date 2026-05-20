@@ -26,13 +26,11 @@ jobs:
       - name: Checkout Targeted Branch Code
         uses: actions/checkout@v4
         with:
-          # FIX: This forces GitHub to check out the branch selected in your UI dropdown, instead of main
           ref: ${{ github.ref_name }}
           fetch-depth: 0 
 
       - name: Force Fetch Tags and Remote History
         run: |
-          # FIX: Ensures the local runner runner explicitly registers historical release tags
           git fetch --tags --force origin
           git fetch origin ${{ github.ref_name }}
 
@@ -84,31 +82,30 @@ jobs:
           fi
           sed -i -E "s/(ASPECTS_VERSION\s*:\s*)[0-9]+\.[0-9]+\.[0-9]+/\1$NEW_V/g" "$YAML_FILE"
 
-      - name: Compile Native Git Changelog Delta
+      - name: Process Changelog Delta and Update Files
         id: git_changelog
         run: |
           BASE_TAG="${{ inputs.base_tag }}"
+          NEW_TAG="${{ steps.semver.outputs.new_tag }}"
+          CHANGELOG_FILE="CHANGELOG.md"
+          CURRENT_DATE=$(date +%Y-%m-%d)
           
           if ! git rev-parse "$BASE_TAG" >/dev/null 2>&1; then
             echo "Error: Base tag $BASE_TAG does not exist in local git history."
             exit 1
           fi
 
-          echo "Generating logs comparing $BASE_TAG to current branch head..."
-          
-          # Isolate commits and pull requests since the base tag
-          git log ${BASE_TAG}..HEAD --oneline > pr_raw.txt
-          
-          # Initialize clean markdown storage variables
+          # 1. Build string outputs into memory variables
           FEAT_CHANGES=""
           FIX_CHANGES=""
           CHORE_CHANGES=""
+          MISC_CHANGES=""
           
+          # Read Git history directly via string stream without leaving any disk files behind
           while IFS= read -r line; do
-            # Strip hash code prefix
             PR_MSG=$(echo "$line" | sed -E 's/^[a-f0-9]+ //')
+            MISC_CHANGES="${MISC_CHANGES}\n- ${PR_MSG}"
             
-            # Sort changes by Conventional Commit definitions
             if [[ "$PR_MSG" =~ "feat" ]]; then
               FEAT_CHANGES="${FEAT_CHANGES}\n- ${PR_MSG}"
             elif [[ "$PR_MSG" =~ "fix" || "$PR_MSG" =~ "bug" ]]; then
@@ -116,56 +113,41 @@ jobs:
             elif [[ "$PR_MSG" =~ "chore" || "$PR_MSG" =~ "docs" || "$PR_MSG" =~ "refactor" ]]; then
               CHORE_CHANGES="${CHORE_CHANGES}\n- ${PR_MSG}"
             fi
-          done < pr_raw.txt
+          done < <(git log ${BASE_TAG}..HEAD --oneline)
 
-          # Build combined final release notes text file
-          echo "## Changes since release $BASE_TAG" > calculated_notes.md
-          
-          if [ ! -z "$FEAT_CHANGES" ]; then
-            echo -e "\n### 🚀 Features" >> calculated_notes.md
-            echo -e "$FEAT_CHANGES" >> calculated_notes.md
-          fi
-          if [ ! -z "$FIX_CHANGES" ]; then
-            echo -e "\n### 🐛 Bug Fixes" >> calculated_notes.md
-            echo -e "$FIX_CHANGES" >> calculated_notes.md
-          fi
-          if [ ! -z "$CHORE_CHANGES" ]; then
-            echo -e "\n### 🧰 Maintenance & Refactoring" >> calculated_notes.md
-            echo -e "$CHORE_CHANGES" >> calculated_notes.md
-          fi
-          
-          # Fallback if no specific prefix pattern matches
+          # 2. Compile PR Body Context
+          PR_MARKDOWN="## Changes since release $BASE_TAG"
+          if [ ! -z "$FEAT_CHANGES" ]; then PR_MARKDOWN="${PR_MARKDOWN}\n\n### 🚀 Features${FEAT_CHANGES}"; fi
+          if [ ! -z "$FIX_CHANGES" ]; then PR_MARKDOWN="${PR_MARKDOWN}\n\n### 🐛 Bug Fixes${FIX_CHANGES}"; fi
+          if [ ! -z "$CHORE_CHANGES" ]; then PR_MARKDOWN="${PR_MARKDOWN}\n\n### 🧰 Maintenance & Refactoring${CHORE_CHANGES}"; fi
           if [ -z "$FEAT_CHANGES" ] && [ -z "$FIX_CHANGES" ] && [ -z "$CHORE_CHANGES" ]; then
-            echo -e "\n### 📝 Miscellaneous Updates" >> calculated_notes.md
-            cat pr_raw.txt | sed 's/^/- /' >> calculated_notes.md
+            PR_MARKDOWN="${PR_MARKDOWN}\n\n### 📝 Miscellaneous Updates${MISC_CHANGES}"
           fi
           
-          echo "BODY<<EOF" >> $GITHUB_OUTPUT
-          cat calculated_notes.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # 3. Compile CHANGELOG.md Entry Block
+          ENTRY_MARKDOWN=""
+          if [ ! -z "$FEAT_CHANGES" ]; then ENTRY_MARKDOWN="${ENTRY_MARKDOWN}\n### 🚀 Features${FEAT_CHANGES}"; fi
+          if [ ! -z "$FIX_CHANGES" ]; then ENTRY_MARKDOWN="${ENTRY_MARKDOWN}\n### 🐛 Bug Fixes${FIX_CHANGES}"; fi
+          if [ ! -z "$CHORE_CHANGES" ]; then ENTRY_MARKDOWN="${ENTRY_MARKDOWN}\n### 🧰 Maintenance & Refactoring${CHORE_CHANGES}"; fi
+          if [ -z "$FEAT_CHANGES" ] && [ -z "$FIX_CHANGES" ] && [ -z "$CHORE_CHANGES" ]; then
+            ENTRY_MARKDOWN="${ENTRY_MARKDOWN}\n### 📝 Miscellaneous Updates${MISC_CHANGES}"
+          fi
 
-      - name: Prepend to CHANGELOG.md
-        run: |
-          CHANGELOG_FILE="CHANGELOG.md"
-          CURRENT_DATE=$(date +%Y-%m-%d)
-          
-          if [ ! -f "$CHANGELOG_FILE" ]; then
-            touch "$CHANGELOG_FILE"
-          fi
-          
-          echo -e "# Release ${{ steps.semver.outputs.new_tag }} ($CURRENT_DATE)\n" > changelog_temp.md
-          cat calculated_notes.md | sed 's/## Changes since release.*//' >> changelog_temp.md
-          echo -e "\n---\n" >> changelog_temp.md
-          
-          cat "$CHANGELOG_FILE" >> changelog_temp.md
-          mv changelog_temp.md "$CHANGELOG_FILE"
+          # 4. Prepend directly to CHANGELOG.md using inline stacking
+          if [ ! -f "$CHANGELOG_FILE" ]; then touch "$CHANGELOG_FILE"; fi
+          echo -e "# Release ${NEW_TAG} (${CURRENT_DATE})\n${ENTRY_MARKDOWN}\n\n---\n\n$(cat $CHANGELOG_FILE)" > "$CHANGELOG_FILE"
+
+          # 5. Output values safely to runner memory environment
+          echo "BODY<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$PR_MARKDOWN" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: bump version to ${{ steps.semver.outputs.raw_version }} and update CHANGELOG [skip ci]"
-          base: ${{ github.ref_name }} # FIX: Targets the maintenance branch as the merge base
+          base: ${{ github.ref_name }} 
           branch: "release/${{ steps.semver.outputs.new_tag }}"
           title: "Release ${{ steps.semver.outputs.new_tag }}"
           body: |
