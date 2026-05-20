@@ -95,6 +95,7 @@ jobs:
 
           sed -i -E "s/(__version__ *= *['\"])[^'\"]*(['\"])/\1${RAW_V}\2/g" "tutoraspects/__about__.py"
           sed -i -E "s/(ASPECTS_VERSION\s*:\s*)[0-9]+\.[0-9]+\.[0-9]+/\1${RAW_V}/g" ".ci/config.yml"
+          sed -i -E "s/(current_version\s*=\s*)[0-9]+\.[0-9]+\.[0-9]+/\1${RAW_V}/g" "setup.cfg"
 
           # Build changelog sections once; reuse for both CHANGELOG.md and PR body
           ENTRY_MD=""
