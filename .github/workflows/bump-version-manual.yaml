@@ -109,25 +109,26 @@ jobs:
           [ -n "$CHORE" ] && add_section "Maintenance & Refactoring" "$CHORE"
           [ -n "$MISC" ]  && add_section "Miscellaneous Updates" "$MISC"
 
-          PR_MD="## Changes since release ${BASE}\n\n${ENTRY_MD}"
+          PR_MD="## ${NEW_TAG} - ${CURRENT_DATE}\n\n${ENTRY_MD}"
 
           C_FILE="CHANGELOG.md"
           [ ! -f "$C_FILE" ] && touch "$C_FILE"
 
-          # awk handles find-and-insert before first existing entry, with fallback to append
-          NEW_ENTRY="$(printf '# Release %s (%s)\n%b\n\n---\n' "$NEW_TAG" "$CURRENT_DATE" "$ENTRY_MD")"
-          awk -v entry="$NEW_ENTRY" '
-            /^# Release v/ && !done { print entry; done=1 }
+          # Build entry in existing CHANGELOG format: ## vX.Y.Z - YYYY-MM-DD
+          NEW_ENTRY="## ${NEW_TAG} - ${CURRENT_DATE}\n${ENTRY_MD}\n\n---\n"
+          # Insert after the file header, before the first existing release entry
+          awk -v entry="$(printf '%b' "$NEW_ENTRY")" '
+            /^## v/ && !done { print entry; done=1 }
             { print }
-            END { if (!done) print entry }
           ' "$C_FILE" > temp.md && mv temp.md "$C_FILE"
 
           echo "new_tag=${NEW_TAG}" >> $GITHUB_OUTPUT
           echo "raw_version=${RAW_V}" >> $GITHUB_OUTPUT
 
-          EOF_SECTOR=$(dd if=/dev/urandom bs=15 count=1 2>/dev/null | base64 | tr -dc 'a-zA-Z')
+          EOF_SECTOR="EOF_${RANDOM}${RANDOM}"
           echo "BODY<<${EOF_SECTOR}" >> $GITHUB_OUTPUT
-          echo -e "${PR_MD}" >> $GITHUB_OUTPUT
+          printf '%b' "${PR_MD}" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
           echo "${EOF_SECTOR}" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
