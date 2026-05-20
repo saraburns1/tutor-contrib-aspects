@@ -56,12 +56,20 @@ jobs:
             git push origin "$TAG"
           fi
 
+      - name: Extract release notes
+        id: release_notes
+        run: |
+          EOF_SECTOR="EOF_${RANDOM}${RANDOM}"
+          echo "NOTES<<${EOF_SECTOR}" >> $GITHUB_OUTPUT
+          awk '/^## v/{if(found) exit; found=1} found{print}' CHANGELOG.md >> $GITHUB_OUTPUT
+          echo "${EOF_SECTOR}" >> $GITHUB_OUTPUT
+
       - name: Create GitHub release
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.read_version.outputs.tag }}
           name: Release ${{ steps.read_version.outputs.tag }}
-          bodyFile: CHANGELOG.md
+          body: ${{ steps.release_notes.outputs.NOTES }}
           skipBodyUpdate: true
 
       - name: Set up Python
