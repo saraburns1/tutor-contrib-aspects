@@ -1,4 +1,4 @@
-name: Bump Version (Manually)
+name: 1. Prepare Release PR
 
 on:
   workflow_dispatch:
@@ -26,7 +26,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Essential to pull all historical commit history for delta comparisons
 
       - name: Calculate Next Version
         id: semver
@@ -60,15 +60,15 @@ jobs:
         run: |
           NEW_V="${{ steps.semver.outputs.raw_version }}"
           
-          # 1. Update tutoraspects/_about_.py
-          PY_FILE="tutoraspects/__about__.py"
+          # 1. Update Python Metadata File (Root Directory)
+          PY_FILE="__about__.py"
           if [ ! -f "$PY_FILE" ]; then
-            echo "Error: $PY_FILE not found!"
+            echo "Error: $PY_FILE not found in the root directory!"
             exit 1
           fi
           sed -i -E "s/(__version__ *= *['\"])[^'\"]*(['\"])/\1$NEW_V\2/g" "$PY_FILE"
           
-          # 2. Update .ci/config.yaml (Matches "ASPECTS_VERSION: any-version")
+          # 2. Update Continuous Integration Configuration (.yml extension)
           YAML_FILE=".ci/config.yml"
           if [ ! -f "$YAML_FILE" ]; then
             echo "Error: $YAML_FILE not found!"
@@ -76,20 +76,86 @@ jobs:
           fi
           sed -i -E "s/(ASPECTS_VERSION\s*:\s*)[0-9]+\.[0-9]+\.[0-9]+/\1$NEW_V/g" "$YAML_FILE"
 
-      - name: Generate Label-Based Release Notes
-        id: changelog
-        uses: release-drafter/release-drafter@v6
-        with:
-          config-name: release-drafter.yml
-          version: ${{ steps.semver.outputs.new_tag }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compile Native Git Changelog Delta
+        id: git_changelog
+        run: |
+          BASE_TAG="${{ inputs.base_tag }}"
+          
+          if ! git rev-parse "$BASE_TAG" >/dev/null 2>&1; then
+            echo "Error: Base tag $BASE_TAG does not exist in local git history."
+            exit 1
+          fi
+
+          echo "Generating logs comparing $BASE_TAG...HEAD"
+          
+          # Isolate PR merge commits since the base tag
+          git log ${BASE_TAG}..HEAD --merges --oneline > pr_raw.txt
+          
+          # Initialize clean markdown storage variables
+          FEAT_CHANGES=""
+          FIX_CHANGES=""
+          CHORE_CHANGES=""
+          OTHER_CHANGES=""
+          
+          while IFS= read -r line; do
+            PR_MSG=$(echo "$line" | sed -E 's/^[a-f0-9]+ //')
+            
+            if [[ "$PR_MSG" =~ "feat" ]]; then
+              FEAT_CHANGES="${FEAT_CHANGES}\n- ${PR_MSG}"
+            elif [[ "$PR_MSG" =~ "fix" || "$PR_MSG" =~ "bug" ]]; then
+              FIX_CHANGES="${FIX_CHANGES}\n- ${PR_MSG}"
+            elif [[ "$PR_MSG" =~ "chore" || "$PR_MSG" =~ "docs" || "$PR_MSG" =~ "refactor" ]]; then
+              CHORE_CHANGES="${CHORE_CHANGES}\n- ${PR_MSG}"
+            else
+              OTHER_CHANGES="${OTHER_CHANGES}\n- ${PR_MSG}"
+            fi
+          done < pr_raw.txt
+
+          # Build combined final release notes text file
+          echo "## Changes since release $BASE_TAG" > calculated_notes.md
+          
+          if [ ! -z "$FEAT_CHANGES" ]; then
+            echo -e "\n### 🚀 Features" >> calculated_notes.md
+            echo -e "$FEAT_CHANGES" >> calculated_notes.md
+          fi
+          if [ ! -z "$FIX_CHANGES" ]; then
+            echo -e "\n### 🐛 Bug Fixes" >> calculated_notes.md
+            echo -e "$FIX_CHANGES" >> calculated_notes.md
+          fi
+          if [ ! -z "$CHORE_CHANGES" ]; then
+            echo -e "\n### 🧰 Maintenance & Refactoring" >> calculated_notes.md
+            echo -e "$CHORE_CHANGES" >> calculated_notes.md
+          fi
+          if [ -z "$FEAT_CHANGES" ] && [ -z "$FIX_CHANGES" ] && [ -z "$CHORE_CHANGES" ]; then
+            echo -e "\n### 📝 Miscellaneous" >> calculated_notes.md
+            cat pr_raw.txt | sed 's/^/- /' >> calculated_notes.md
+          fi
+          
+          echo "BODY<<EOF" >> $GITHUB_OUTPUT
+          cat calculated_notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Prepend to CHANGELOG.md
+        run: |
+          CHANGELOG_FILE="CHANGELOG.md"
+          CURRENT_DATE=$(date +%Y-%m-%d)
+          
+          if [ ! -f "$CHANGELOG_FILE" ]; then
+            touch "$CHANGELOG_FILE"
+          fi
+          
+          echo -e "# Release ${{ steps.semver.outputs.new_tag }} ($CURRENT_DATE)\n" > changelog_temp.md
+          cat calculated_notes.md | sed 's/## Changes since release.*//' >> changelog_temp.md
+          echo -e "\n---\n" >> changelog_temp.md
+          
+          cat "$CHANGELOG_FILE" >> changelog_temp.md
+          mv changelog_temp.md "$CHANGELOG_FILE"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: bump version to ${{ steps.semver.outputs.raw_version }} [skip ci]"
+          commit-message: "chore: bump version to ${{ steps.semver.outputs.raw_version }} and update CHANGELOG [skip ci]"
           branch: "release/${{ steps.semver.outputs.new_tag }}"
           title: "Release ${{ steps.semver.outputs.new_tag }}"
           body: |
@@ -98,6 +164,6 @@ jobs:
             Once merged, the publication pipeline will trigger automatically.
             
             ### Proposed Release Notes:
-            ${{ steps.changelog.outputs.body }}
+            ${{ steps.git_changelog.outputs.BODY }}
           labels: |
             release-pr
