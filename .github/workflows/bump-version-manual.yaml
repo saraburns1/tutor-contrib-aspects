@@ -23,10 +23,18 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - name: Checkout Code
+      - name: Checkout Targeted Branch Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Essential to pull all historical commit history for delta comparisons
+          # FIX: This forces GitHub to check out the branch selected in your UI dropdown, instead of main
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0 
+
+      - name: Force Fetch Tags and Remote History
+        run: |
+          # FIX: Ensures the local runner runner explicitly registers historical release tags
+          git fetch --tags --force origin
+          git fetch origin ${{ github.ref_name }}
 
       - name: Calculate Next Version
         id: semver
@@ -86,28 +94,27 @@ jobs:
             exit 1
           fi
 
-          echo "Generating logs comparing $BASE_TAG...HEAD"
+          echo "Generating logs comparing $BASE_TAG to current branch head..."
           
-          # Isolate PR merge commits since the base tag
-          git log ${BASE_TAG}..HEAD --merges --oneline > pr_raw.txt
+          # Isolate commits and pull requests since the base tag
+          git log ${BASE_TAG}..HEAD --oneline > pr_raw.txt
           
           # Initialize clean markdown storage variables
           FEAT_CHANGES=""
           FIX_CHANGES=""
           CHORE_CHANGES=""
-          OTHER_CHANGES=""
           
           while IFS= read -r line; do
+            # Strip hash code prefix
             PR_MSG=$(echo "$line" | sed -E 's/^[a-f0-9]+ //')
             
+            # Sort changes by Conventional Commit definitions
             if [[ "$PR_MSG" =~ "feat" ]]; then
               FEAT_CHANGES="${FEAT_CHANGES}\n- ${PR_MSG}"
             elif [[ "$PR_MSG" =~ "fix" || "$PR_MSG" =~ "bug" ]]; then
               FIX_CHANGES="${FIX_CHANGES}\n- ${PR_MSG}"
             elif [[ "$PR_MSG" =~ "chore" || "$PR_MSG" =~ "docs" || "$PR_MSG" =~ "refactor" ]]; then
               CHORE_CHANGES="${CHORE_CHANGES}\n- ${PR_MSG}"
-            else
-              OTHER_CHANGES="${OTHER_CHANGES}\n- ${PR_MSG}"
             fi
           done < pr_raw.txt
 
@@ -126,8 +133,10 @@ jobs:
             echo -e "\n### 🧰 Maintenance & Refactoring" >> calculated_notes.md
             echo -e "$CHORE_CHANGES" >> calculated_notes.md
           fi
+          
+          # Fallback if no specific prefix pattern matches
           if [ -z "$FEAT_CHANGES" ] && [ -z "$FIX_CHANGES" ] && [ -z "$CHORE_CHANGES" ]; then
-            echo -e "\n### 📝 Miscellaneous" >> calculated_notes.md
+            echo -e "\n### 📝 Miscellaneous Updates" >> calculated_notes.md
             cat pr_raw.txt | sed 's/^/- /' >> calculated_notes.md
           fi
           
@@ -156,6 +165,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: bump version to ${{ steps.semver.outputs.raw_version }} and update CHANGELOG [skip ci]"
+          base: ${{ github.ref_name }} # FIX: Targets the maintenance branch as the merge base
           branch: "release/${{ steps.semver.outputs.new_tag }}"
           title: "Release ${{ steps.semver.outputs.new_tag }}"
           body: |
