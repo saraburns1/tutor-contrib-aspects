@@ -1,0 +1,40 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+# Groups your PRs into visual headings based on their GitHub labels
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'feature'
+      - 'feat'
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+      - 'fix'
+      - 'bugfix'
+  - title: '🧰 Maintenance & Refactoring'
+    labels:
+      - 'chore'
+      - 'refactor'
+      - 'style'
+  - title: '📝 Documentation'
+    labels:
+      - 'docs'
+      - 'documentation'
+  - title: '⚡ Performance Improvements'
+    labels:
+      - 'perf'
+      - 'performance'
+
+# Prevents administrative PRs from cluttering the changelog
+exclude-labels:
+  - 'skip-changelog'
+
+# Standard template for each individual PR line item
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+
+# The global container template for your release notes markdown body
+template: |
+  ## Changes since base release
+  $CHANGES
