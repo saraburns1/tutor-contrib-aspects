@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.5.3 - 2026-05-20
+
+
+### Features
+* feat: Add manual version bump workflow ([41f12cd](https://github.com/saraburns1/tutor-contrib-aspects/commit/41f12cde8a4ac203075bc479aa4cf11474f39ffa))
+
+### Bug Fixes
+* Fix commit log formatting and message parsing ([674fe8d](https://github.com/saraburns1/tutor-contrib-aspects/commit/674fe8dcadcc92f3499ade5d97165ace6c134fbb))
+* fix: Rename workflow and update file paths in YAML ([0c6ee5e](https://github.com/saraburns1/tutor-contrib-aspects/commit/0c6ee5e252d1b50e283130670492d2949a2346b6))
+* fix: Refactor bump-version-manual workflow for clarity ([f1e59fc](https://github.com/saraburns1/tutor-contrib-aspects/commit/f1e59fc78b88784e72317af5cf44be521a3c2272))
+* fix: Rename config file from config.yaml to config.yml ([58b3953](https://github.com/saraburns1/tutor-contrib-aspects/commit/58b39539cdf6fb619ad22cda4963224de3e2a75c))
+* fix: Fix path to _about_.py in workflow file ([e3ce72a](https://github.com/saraburns1/tutor-contrib-aspects/commit/e3ce72a2bbffeed4f92c8f5c7830499ea4f0098d))
+* fix: Fix path to _about_.py in version bump workflow ([6ef07f2](https://github.com/saraburns1/tutor-contrib-aspects/commit/6ef07f234a1a6d7a39a5e45a92cdc92e05f45778))
+* fix: Update dataset UUID in Operator Dashboard YAML ([e4f4950](https://github.com/saraburns1/tutor-contrib-aspects/commit/e4f4950b4df1ac06d0f1150925652963493f092f))
+* fix: remove unneeded course name ([00b7829](https://github.com/saraburns1/tutor-contrib-aspects/commit/00b7829772c538ecb15153eb715a39b650ffc9ad))
+
+### Maintenance & Refactoring
+* Refactor version bumping logic in workflow ([6d687ce](https://github.com/saraburns1/tutor-contrib-aspects/commit/6d687cea8ef43196a54450b57f2f2647ec417fd7))
+* Refactor version bump workflow to use Python ([0608e3b](https://github.com/saraburns1/tutor-contrib-aspects/commit/0608e3b6ae404876ebacb43115e31b36bd5cd9e5))
+* Refactor version bump workflow and update changelog ([22e0e9e](https://github.com/saraburns1/tutor-contrib-aspects/commit/22e0e9ef4bd9c6f71c2c046f86166ea94d36a63c))
+* Refactor bump version workflow for manual input ([af1ad67](https://github.com/saraburns1/tutor-contrib-aspects/commit/af1ad670c0952d061743ecea431525d76f4e43e0))
+* Refactor bump-version-manual workflow for clarity ([944dd2a](https://github.com/saraburns1/tutor-contrib-aspects/commit/944dd2aa071e17e3466471cc6cb2f0398291941d))
+
+### Miscellaneous Updates
+* Modify PR markdown for version bump ([387d384](https://github.com/saraburns1/tutor-contrib-aspects/commit/387d3848771e2f5d9b21a366450e97d208a9a083))
+* Update bump-version-manual.yaml ([9dfd276](https://github.com/saraburns1/tutor-contrib-aspects/commit/9dfd276c5d3a22bd6bb09ff49243eb604ef82e73))
+* Update bump-version-manual.yaml ([3ce1f35](https://github.com/saraburns1/tutor-contrib-aspects/commit/3ce1f354f83531c0e3f737976ad1ce4a0df4516a))
+* Update bump-version-manual.yaml ([dd06c43](https://github.com/saraburns1/tutor-contrib-aspects/commit/dd06c4377be926d898717a304197516be7bde329))
+* Update bump-version-manual.yaml ([f003ae1](https://github.com/saraburns1/tutor-contrib-aspects/commit/f003ae14842bfefa058e96fbfa3fd3ec06de159f))
+
+---
 ## v2.5.1 - 2025-12-09
 
 ### [2.5.1](https://github.com/openedx/tutor-contrib-aspects/compare/v2.5.0...v2.5.1) (2025-12-09)
