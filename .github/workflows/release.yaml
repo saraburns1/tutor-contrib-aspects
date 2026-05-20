@@ -43,7 +43,19 @@ jobs:
           echo "raw_version=${RAW_V}" >> $GITHUB_OUTPUT
           echo "tag=v${RAW_V}" >> $GITHUB_OUTPUT
 
+      - name: Check if version already exists on PyPI
+        if: github.event_name == 'pull_request' || inputs.dry_run == false
+        run: |
+          VERSION="${{ steps.read_version.outputs.raw_version }}"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://pypi.org/pypi/tutor-contrib-aspects/${VERSION}/json")
+          if [ "$STATUS" = "200" ]; then
+            echo "::error::Version ${VERSION} is already published on PyPI. Aborting."
+            exit 1
+          fi
+          echo "Version ${VERSION} not found on PyPI, proceeding."
+
       - name: Create GitHub tag
+        if: github.event_name == 'pull_request' || inputs.dry_run == false
         # Skip if tag already exists (e.g. re-running after a partial failure)
         run: |
           TAG="${{ steps.read_version.outputs.tag }}"
@@ -65,6 +77,7 @@ jobs:
           echo "${EOF_SECTOR}" >> $GITHUB_OUTPUT
 
       - name: Create GitHub release
+        if: github.event_name == 'pull_request' || inputs.dry_run == false
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.read_version.outputs.tag }}
@@ -84,9 +97,7 @@ jobs:
         run: make build-pythonpackage
 
       - name: Validate package
-        run: |
-          pip install twine
-          twine check dist/*
+        run: twine check dist/*
 
       - name: Publish to PyPI
         if: >
