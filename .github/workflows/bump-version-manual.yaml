@@ -1,4 +1,4 @@
-name: 1. Prepare Release PR
+name: Bump Version (Manually)
 
 on:
   workflow_dispatch:
@@ -60,15 +60,15 @@ jobs:
         run: |
           NEW_V="${{ steps.semver.outputs.raw_version }}"
           
-          # 1. Update Python Metadata File (Root Directory)
-          PY_FILE="__about__.py"
+          # 1. Update Python Metadata File (Inside tutoraspects folder)
+          PY_FILE="tutoraspects/__about__.py"
           if [ ! -f "$PY_FILE" ]; then
-            echo "Error: $PY_FILE not found in the root directory!"
+            echo "Error: $PY_FILE not found!"
             exit 1
           fi
           sed -i -E "s/(__version__ *= *['\"])[^'\"]*(['\"])/\1$NEW_V\2/g" "$PY_FILE"
           
-          # 2. Update Continuous Integration Configuration (.yml extension)
+          # 2. Update Continuous Integration Configuration
           YAML_FILE=".ci/config.yml"
           if [ ! -f "$YAML_FILE" ]; then
             echo "Error: $YAML_FILE not found!"
