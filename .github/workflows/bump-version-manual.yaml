@@ -86,15 +86,16 @@ jobs:
           done <<< "$COMMIT_LOG"
 
           [ "$FORCE_BUMP" != "auto" ] && BUMP="$FORCE_BUMP"
-          IFS='.' read -r major minor patch <<< "${BASE#v}"
+          IFS='.' read -r ver_major ver_minor ver_patch <<< "${BASE#v}"
           case "$BUMP" in
-            major) major=$((major+1)); minor=0; patch=0 ;;
-            minor) minor=$((minor+1)); patch=0 ;;
-            *)     patch=$((patch+1)) ;;
+            major) ver_major=$((ver_major+1)); ver_minor=0; ver_patch=0 ;;
+            minor) ver_minor=$((ver_minor+1)); ver_patch=0 ;;
+            patch) ver_patch=$((ver_patch+1)) ;;
+            *)     ver_patch=$((ver_patch+1)) ;;
           esac
 
-          NEW_TAG="v${major}.${minor}.${patch}"
-          RAW_V="${major}.${minor}.${patch}"
+          NEW_TAG="v${ver_major}.${ver_minor}.${ver_patch}"
+          RAW_V="${ver_major}.${ver_minor}.${ver_patch}"
           if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then echo "::error::Target version '${NEW_TAG}' already exists." && exit 1; fi
 
           sed -i -E "s/(__version__ *= *['\"])[^'\"]*(['\"])/\1${RAW_V}\2/g" "tutoraspects/__about__.py"
