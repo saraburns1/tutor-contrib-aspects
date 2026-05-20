@@ -1,0 +1,103 @@
+name: Bump Version (Manually)
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_tag:
+        description: 'The previous release tag to base this new version on (e.g., v1.4.2)'
+        required: true
+      bump_type:
+        description: 'SemVer increment type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  prepare-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate Next Version
+        id: semver
+        run: |
+          BASE="${{ inputs.base_tag }}"
+          BUMP="${{ inputs.bump_type }}"
+          CLEAN_VER="${BASE#v}"
+          
+          IFS='.' read -r major minor patch <<< "$CLEAN_VER"
+          
+          if [ "$BUMP" = "major" ]; then
+            major=$((major + 1)); minor=0; patch=0
+          elif [ "$BUMP" = "minor" ]; then
+            minor=$((minor + 1)); patch=0
+          elif [ "$BUMP" = "patch" ]; then
+            patch=$((patch + 1))
+          fi
+          
+          NEXT_VERSION="v$major.$minor.$patch"
+          RAW_VERSION="$major.$minor.$patch"
+          
+          if git rev-parse "$NEXT_VERSION" >/dev/null 2>&1; then
+            echo "Error: Target version '$NEXT_VERSION' already exists."
+            exit 1
+          fi
+          
+          echo "new_tag=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "raw_version=$RAW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update Version in Project Files
+        run: |
+          NEW_V="${{ steps.semver.outputs.raw_version }}"
+          
+          # 1. Update tutoraspects/_about_.py
+          PY_FILE="tutoraspects/_about_.py"
+          if [ ! -f "$PY_FILE" ]; then
+            echo "Error: $PY_FILE not found!"
+            exit 1
+          fi
+          sed -i -E "s/(__version__ *= *['\"])[^'\"]*(['\"])/\1$NEW_V\2/g" "$PY_FILE"
+          
+          # 2. Update .ci/config.yaml (Matches "ASPECTS_VERSION: any-version")
+          YAML_FILE=".ci/config.yaml"
+          if [ ! -f "$YAML_FILE" ]; then
+            echo "Error: $YAML_FILE not found!"
+            exit 1
+          fi
+          sed -i -E "s/(ASPECTS_VERSION\s*:\s*)[0-9]+\.[0-9]+\.[0-9]+/\1$NEW_V/g" "$YAML_FILE"
+
+      - name: Generate Label-Based Release Notes
+        id: changelog
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          version: ${{ steps.semver.outputs.new_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: bump version to ${{ steps.semver.outputs.raw_version }} [skip ci]"
+          branch: "release/${{ steps.semver.outputs.new_tag }}"
+          title: "Release ${{ steps.semver.outputs.new_tag }}"
+          body: |
+            This PR prepares the release for version **${{ steps.semver.outputs.new_tag }}** branching from base version `${{ inputs.base_tag }}`.
+            
+            Once merged, the publication pipeline will trigger automatically.
+            
+            ### Proposed Release Notes:
+            ${{ steps.changelog.outputs.body }}
+          labels: |
+            release-pr
