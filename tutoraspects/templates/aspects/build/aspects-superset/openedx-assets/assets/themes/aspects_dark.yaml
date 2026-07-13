@@ -1,0 +1,10 @@
+_file_name: aspects_dark.yaml
+json_data:
+  algorithm: dark
+  token:
+    colorErrorBg: '#87353c'
+    colorSuccessBg: '#357e4e'
+    colorWarningBg: '#a6711c'
+theme_name: aspects_dark
+uuid: 45b4b191-c759-4f48-b79a-347c2cc56c55
+version: 1.0.0

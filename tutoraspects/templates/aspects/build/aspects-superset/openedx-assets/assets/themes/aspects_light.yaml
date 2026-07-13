@@ -1,0 +1,9 @@
+_file_name: aspects_light.yaml
+json_data:
+  token:
+    colorErrorBg: '#efa1aa'
+    colorSuccessBg: '#ace1c4'
+    colorWarningBg: '#fde380'
+theme_name: aspects_light
+uuid: e0b6bf32-079c-4766-b467-57766bee9849
+version: 1.0.0
